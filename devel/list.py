@@ -10,6 +10,7 @@ import glob
 
 
 alf = glob.glob("_ign/*.json")
+print(alf)
 # remove everything before the last underscore
 alf = [x.split("_")[-1] for x in alf]
 # remove the .json extension

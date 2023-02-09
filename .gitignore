@@ -1,2 +1,4 @@
 # ignore the cache directory
 _ign/*
+_imgcache/*
+
