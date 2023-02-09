@@ -1,0 +1,4729 @@
+﻿openapi: 3.0.1
+info:
+  title: FotoWare API
+  description: |
+    This reference documents the available endpoints for FotoWare's API.
+    <br/>
+    Click the Authorize button at the top of the page to try the API with your own FotoWare as a Service tenant.<br/>
+    To enable authorization and testing of the API on an on-premises server, <a target="_blank" href='https://learn.fotoware.com/Integrations_and_APIs/001_The_FotoWare_API/FotoWare_API_Overview/Exploring_the_FotoWare_API_with_Swagger'>please follow the instructions in our software documentation</a><br/>
+  version: 1.0.0
+externalDocs:
+  description: Go into more details in our API Documentation
+  url: https://learn.fotoware.com/Integrations_and_APIs
+servers:
+- url: ''
+security:
+  - FotoWareAccessToken: []
+paths:
+  /fotoweb/:
+    get:
+      tags:
+        - API Entry Points
+      security: []   # No security
+      summary: Public entry point
+      description: The Public entry point is for unauthenticated, read-only guest access. It is only available if Guest access 
+        is enabled and licensed on the FotoWeb server.
+      responses:
+        '200':
+          description: OK. Call successfuly completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIDescriptor'
+            application/vnd.fotoware.api-descriptor+json:
+              schema:
+                $ref: '#/components/schemas/APIDescriptor'
+  /fotoweb/me/:
+    get:
+      tags:
+        - API Entry Points
+      summary: Private entry point
+      description: The Private entry point allows authenticated access to the server to view and modify data. It requires 
+        authentication, either as administrator (server-to-server authentication) or as a specific user.
+      responses:
+        '200':
+          description: OK. Call successfuly completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullAPIDescriptor'
+            application/vnd.fotoware.full-api-descriptor+json:
+              schema:
+                $ref: '#/components/schemas/FullAPIDescriptor'
+        '401':
+          description: Unauthorized. Access is denied due to invalid credentials
+  /fotoweb/albums/:
+    get:
+      tags:
+        - Albums
+      summary: |
+        Lists the public albums in the DAM. The list contains albums which are shared in Fotoware.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+            application/vnd.fotoware.collectionlist+json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+  /fotoweb/me/albums/:
+    get:
+      tags:
+        - Albums
+      summary: |
+        Lists the albums accessible by the current user/access token. This list contains all albums that the user can access. Use the q parameter to search in multiple albums/collections (search in name, description and tags elements).
+      parameters:
+        - name: q
+          in: query
+          description: Query for asset(s). See <a target="_blank" href="https://learn.fotoware.com/Integrations_and_APIs/001_The_FotoWare_API/FotoWare_API_Overview/Collection_Queries">Collection Queries</a> for more information on querying.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+            application/vnd.fotoware.collectionlist+json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+  /fotoweb/me/albums/mine/:
+    get:
+      tags:
+        - Albums
+      summary: Lists the albums owned by the current user/access token.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+            application/vnd.fotoware.collectionlist+json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+  /fotoweb/me/albums/shared-with-me/:
+    get:
+      tags:
+        - Albums
+      summary: List the albums shared with the current user/access token.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+            application/vnd.fotoware.collectionlist+json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+  /fotoweb/me/albums/archived/:
+    get:
+      tags:
+        - Albums
+      summary: List the archived albums owned by the current user/access token.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+            application/vnd.fotoware.collectionlist+json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+  /fotoweb/me/albums/deleted/:
+    get:
+      tags:
+        - Albums
+      summary: List the deleted albums owned by the current user/access token.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+            application/vnd.fotoware.collectionlist+json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+  /fotoweb/me/albums/contribute/:
+    get:
+      tags:
+        - Albums
+      summary: List the albums contributed to by the current user/access token.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+            application/vnd.fotoware.collectionlist+json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+  /fotoweb/me/people/?{q}:
+    get:
+      tags:
+        - Albums sharing
+      summary: Search among the users and groups you have permission to share albums with
+      parameters:
+        - name: q
+          in: path
+          description: |
+            Query for user(s) and group(s), e.g. q=consumer
+          required: true
+          schema:
+            type: string
+      responses: 
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PeopleList'
+            application/vnd.fotoware.people-list+json:
+              schema:
+                $ref: '#/components/schemas/PeopleList'
+        '400':
+          description: 400 Bad request
+        '401':
+          description: 401 Unauthorized
+  /fotoweb/users/{userid}/albums/{albumid}/:
+    get:
+      tags:
+        - Albums sharing
+      summary: Get all information for an album for a specfic user; including properties, assets in the album etc.
+      parameters:
+        - name: userid
+          in: path
+          description: Unique ID of the user
+          required: true
+          schema:
+            type: string
+        - name: albumid
+          in: path
+          description: Unique ID of the album
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 200 OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionInfo'
+            application/vnd.fotoware.collectioninfo+json:
+              schema:
+                $ref: '#/components/schemas/CollectionInfo'
+  /fotoweb/users/{userid}/albums/{albumid}/.shares/:
+    get:
+      tags:
+        - Albums sharing
+      summary: Gets sharing details for an album for a specfic user; including any shares, public link and user/groups shares
+      parameters:
+        - name: userid
+          in: path
+          description: Unique ID of the user
+          required: true
+          schema:
+            type: string
+        - name: albumid
+          in: path
+          description: Unique ID of the album
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 200 OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sharing'
+            application/vnd.fotoware.sharing+json:
+              schema:
+                $ref: '#/components/schemas/Sharing'
+    patch:
+      tags:
+        - Albums sharing
+      summary: Make updates to album sharing for an album. 
+      description: |
+        This is mainly used for enabling/disabling Download permissions on public sharing link
+      parameters:
+        - name: userid
+          in: path
+          description: Unique ID of the user
+          required: true
+          schema:
+            type: string
+        - name: albumid
+          in: path
+          description: Unique ID of the album
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/vnd.fotoware.sharing-update+json:
+            schema:
+              $ref: '#/components/schemas/SharingUpdate'
+      responses:
+        '200':
+          description: 200 OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SharingLinkList'
+            application/vnd.fotoware.sharing-link-list+json:
+              schema:
+                $ref: '#/components/schemas/SharingLinkList'
+  /fotoweb/{archiveid}/{folderpath}/{asset}.annotations:
+    parameters:
+      - name: archiveid
+        in: path
+        description: TODO
+        required: true
+        schema:
+          type: string
+      - name: folderpath
+        in: path
+        description: TODO
+        required: true
+        schema:
+          type: string
+      - name: asset
+        in: path
+        description: TODO
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - Annotations
+      summary: Get all the annotations for an asset
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnotationList'
+            application/vnd.fotoware.annotation-list+json:
+              schema:
+                $ref: '#/components/schemas/AnnotationList'
+            application/vnd.fotoware.count+json:
+              schema:
+                $ref: '#/components/schemas/Count'
+    post:
+      tags:
+        - Annotations
+      summary: Add a new annotation for an asset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Annotation'
+          application/vnd.fotoware.annotation+json:
+            schema:
+              $ref: '#/components/schemas/Annotation'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Annotation'
+            application/vnd.fotoware.annotation+json:
+              schema:
+                $ref: '#/components/schemas/Annotation'
+  /fotoweb/{archiveid}/{folderpath}{asset}.annotations/{annotationid}:
+    get:
+      tags:
+        - Annotations
+      summary: Get the annotation for an asset based on the annotation id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Annotation'
+            application/vnd.fotoware.annotation+json:
+              schema:
+                $ref: '#/components/schemas/Annotation'
+    patch:
+      tags:
+        - Annotations
+      summary: Edit an annotation on an asset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Annotation'
+          application/vnd.fotoware.annotation+json:
+            schema:
+              $ref: '#/components/schemas/Annotation'
+      responses:
+        '204':
+          description: OK
+    delete:
+      tags:
+        - Annotations
+      summary: Delete an annotation from an asset
+      responses:
+        '204':
+          description: OK
+        '404':
+          description: Annotation not found
+  /fotoweb/archives/:
+    get:
+      tags:
+        - Archives
+      security: []   # No security
+      summary: |
+        Get all publically available archives in the FotoWare DAM instance. To search, add the q parameter.
+      externalDocs:
+        description: Archives
+        url: https://learn.fotoware.com/Integrations_and_APIs/001_The_FotoWare_API/FotoWare_API_Overview/Archives
+      parameters:
+        - name: q
+          in: query
+          description: Query for asset(s). See <a target="_blank" href="https://learn.fotoware.com/Integrations_and_APIs/001_The_FotoWare_API/FotoWare_API_Overview/Collection_Queries">Collection Queries</a> for more information on querying.
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK. Call successfuly completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+            application/vnd.fotoware.collectionlist+json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+  /fotoweb/me/archives/:
+    get:
+      tags:
+      - Archives
+      summary: Lists the archives accessible by the current user/access token.
+      externalDocs:
+        description: Archives
+        url: https://learn.fotoware.com/Integrations_and_APIs/001_The_FotoWare_API/FotoWare_API_Overview/Archives
+      operationId: GetPrivateArchiveList
+      responses:
+        200:
+          description: OK. Call successfuly completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+            application/vnd.fotoware.collectionlist+json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+        401:
+          description: Unauthorized. Access is denied due to invalid credentials
+  /fotoweb/archives/{id}/:
+    get:
+      tags:
+      - Archives
+      summary: Get all information about an archive
+      operationId: GetArchive
+      parameters:
+        - name: id
+          in: path
+          description: Unique ID of the archive
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK. Call successfuly completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+            application/vnd.fotoware.collection+json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+            application/vnd.fotoware.collectioninfo+json:
+              schema:
+                $ref: '#/components/schemas/CollectionInfo'
+            application/vnd.fotoware.collectionlist+json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+            application/vnd.fotoware.assetlist+json:
+              schema:
+                $ref: '#/components/schemas/AssetList'
+        '401':
+          description: Unauthorized. Access is denied due to invalid credentials
+  /fotoweb/editors/{viewid}:
+    get:
+      tags:
+        - Assets and Metadata
+      summary: Get a metadata view representation
+      description: Pass in the metadata view id to get the full representation of the view
+      externalDocs:
+        description: Metadata Views
+        url: https://learn.fotoware.com/Integrations_and_APIs/001_The_FotoWare_API/FotoWare_API_Overview/Metadata_Views
+      parameters:
+        - name: viewid
+          in: path
+          description: Unique ID of the metadata view
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Call successfuly completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetadataView'
+            application/vnd.fotoware.metadata-set+json:
+              schema:
+                $ref: '#/components/schemas/MetadataView'
+        '401':
+          description: Unauthorized. Access is denied due to invalid credentials
+        '403':
+          description: Forbidden. The authenticated user do not have access to get the metadata view representation
+  /fotoweb/archives/{archiveid}/{folderid}/{asset}:
+    parameters:
+      - name: archiveid
+        in: path
+        description: Unique ID of the archive
+        required: true
+        schema:
+          type: string
+      - name: folderid
+        in: path
+        description: Unique ID of the folder
+        required: true
+        schema:
+          type: string
+      - name: asset
+        in: path
+        description: Unique asset
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - Assets and Metadata
+      summary: Get the json representation of an asset
+      description: |
+        All asset resources have this representation. This includes assets in all kinds of collections, such as archives, albums and search results.
+        Information returned about an asset may vary depending on the user that is making the request. In particular, the permissions and previews fields may contain different values for different users. They reflect the permissions that the requesting user has on the asset and the types of previews (size, watermarked or not watermarked, etc.) that are available to that user.
+        The doctype field determines what subsections are present in the attributes section. For example, if the doctype is "image", then attributes.imageattributes is always present. However, it is recommended to explicitly check for presence of these subsections instead whenever they are used
+      operationId: GetAssetDetails
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+            application/vnd.fotoware.asset+json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+    patch:
+      tags:
+        - Assets and Metadata
+      summary: Update metadata on an asset
+      description: Use patch on an asset to update the metadata. The metadata to update is defined in the request body. Required 
+        permissions - Edit Metadata on the archive containing the asset.
+      externalDocs:
+        description: Updating metadata on an asset
+        url: https://learn.fotoware.com/Integrations_and_APIs/001_The_FotoWare_API/FotoWare_API_Overview/Updating_metadata_on_an_asset
+      operationId: PatchMetadata
+      parameters:
+        - name: archiveid
+          in: path
+          description: Unique ID of the archive
+          required: true
+          schema:
+            type: string
+        - name: folderid
+          in: path
+          description: Unique ID of the folder
+          required: true
+          schema:
+            type: string
+        - name: asset
+          in: path
+          description: Unique asset
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/vnd.fotoware.assetupdate+json:
+            schema:
+              $ref: '#/components/schemas/AssetUpdate'
+      responses:
+        '200':
+          description: OK. Call successfuly completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+            application/vnd.fotoware.asset+json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        "400":
+          description: Bad Request. For instance if the metadata object is formatted wrong
+  /fotoweb/me/cart:
+    get:
+      tags:
+        - Orders
+      summary: Get the count of items in the users cart
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/Count'
+            application/vnd.fotoware.count+json:
+              schema:
+                $ref: '#components/schemas/Count'
+            application/vnd.fotoware.order+json:
+              schema:
+                $ref: '#components/schemas/Order'
+        '401':
+          description: Unauthorized
+    post:
+      tags:
+        - Orders
+      summary: Add item(s) to users personal cart
+      description: Add one or more items to the users shopping cart by using the assets url.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetLinkList'
+          application/vnd.fotoware.assetlinklist+json:
+            schema:
+              $ref: '#/components/schemas/AssetLinkList'
+      responses:
+        '204':
+          description: OK
+        '403':
+          description: Forbidden. No access to add items to the users cart.
+        '400':
+          description: Bad request. For instance malformed url to asset.
+    put:
+      tags:
+        - Orders
+      summary: Edit the content of a cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartUpdate'
+          application/vnd.fotoware.cart-update+json:
+            schema:
+              $ref: '#/components/schemas/CartUpdate'
+      responses:
+        '204':
+          description: OK
+        '403':
+          description: Forbidden
+        '400':
+          description: Bad request
+  /fotoweb/me/orders/:
+    get:
+      tags:
+        - Orders
+      summary: Users personal order list
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/OrderList'
+            application/vnd.fotoware.orderlist+json:
+              schema:
+                $ref: '#components/schemas/OrderList'
+    post:
+      tags:
+        - Orders
+      summary: Submit the shopping cart to an order
+      requestBody:
+        content:
+          application/vnd.fotoware.cart-update+json:
+            schema:
+              $ref: "#/components/schemas/CartUpdate"
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderSubmissionInfo"
+            application/vnd.fotoware.order-submission-info+json:
+              schema:
+                $ref: "#/components/schemas/OrderSubmissionInfo"
+        '403':
+          description: Forbidden. The user does not have "Order" permission in the archives of any of the assets in the request
+        '400':
+          description: Bad request
+  /fotoweb/orders/:
+    get:
+      tags:
+        - Orders
+      summary: Site's global order history
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/Count'
+            application/vnd.fotoware.count+json:
+              schema:
+                $ref: '#components/schemas/Count'
+            application/vnd.fotoware.orderlist+json:
+              schema:
+                $ref: '#components/schemas/OrderList'
+  /fotoweb/orders/pending/:
+    get:
+      tags:
+        - Orders
+      summary: Site's global list of pending orders
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/Count'
+            application/vnd.fotoware.count+json:
+              schema:
+                $ref: '#components/schemas/Count'
+            application/vnd.fotoware.orderlist+json:
+              schema:
+                $ref: '#components/schemas/OrderList'
+  /fotoweb/orders/approved/:
+    get:
+      tags:
+        - Orders
+      summary: Site's global list of approved orders
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/Count'
+            application/vnd.fotoware.count+json:
+              schema:
+                $ref: '#components/schemas/Count'
+            application/vnd.fotoware.orderlist+json:
+              schema:
+                $ref: '#components/schemas/OrderList'
+  /fotoweb/orders/rejected/:
+    get:
+      tags:
+        - Orders
+      summary: Site's global list of rejected orders
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/Count'
+            application/vnd.fotoware.count+json:
+              schema:
+                $ref: '#components/schemas/Count'
+            application/vnd.fotoware.orderlist+json:
+              schema:
+                $ref: '#components/schemas/OrderList'
+        '401':
+          description: 401 Unauthorized
+  /fotoweb/orders/{orderhref}:
+    patch:
+      tags:
+        - Orders
+      summary: This request can be used to modify an existing order that is in pending or created state
+      parameters:
+        - name: orderhref
+          in: path
+          description: Unique ID of the order
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderUpdate'
+          application/vnd.fotoware.orderupdate+json:
+            schema:
+              $ref: '#/components/schemas/OrderUpdate'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.fotoware.order+json:
+              schema:
+                $ref: '#/components/schemas/Order'
+  /fotoweb/services/renditions:
+    post:
+      tags:
+        - Renditions
+      summary: Get the rendition download url
+      description: |
+        The representation of an asset gives you a list with predefined renditions available for the asset. This request uses the url
+        to one of those renditions to generate a download url for the asset rendition.
+      externalDocs:
+        description: Downloading asset renditions
+        url: https://learn.fotoware.com/Integrations_and_APIs/001_The_FotoWare_API/FotoWare_API_Overview/Downloading_asset_renditions_using_the_RESTful_API
+      requestBody:
+        content:
+          application/vnd.fotoware.rendition-request+json:
+            schema:
+              $ref: '#/components/schemas/RenditionRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.fotoware.rendition-response+json:
+              schema:
+                $ref: '#/components/schemas/RenditionResponse'
+        '401':
+          description: Unauthorized. Access is denied due to invalid credentials
+        '403':
+          description: Forbidden. The user does not have permission to download the rendition.
+  /fotoweb/me/background-tasks/{id}:
+    get:
+      tags:
+        - Background tasks
+      summary: Polls the status of a tasks
+      description: Gives you the status and info of a submitted background task
+      parameters:
+        - name: id
+          in: path
+          description: Unique id of the background tasks
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadStatus'
+            application/vnd.fotoware.task-status+json:
+              schema:
+                $ref: '#/components/schemas/TaskStatus'
+            application/vnd.fotoware.upload-status+json:
+              schema:
+                $ref: '#/components/schemas/UploadStatus'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    post:
+      tags:
+        - Background tasks
+      summary: Triggers a background task that runs an operation on an asset
+      description: |
+        FotoWeb uses a system of background tasks for some user-triggered operations. These operations cannot be run in a normal request handler as they would take too long time to finish. These operations include: Download | Metadata updates | Actions and marker actions | General File operations (move, copy, rotate etc) | Upload
+      requestBody:
+        content:
+          application/vnd.fotoware.metadata-edit-request+json:
+            schema:
+              $ref: '#/components/schemas/MetadataEditRequest'
+          application/vnd.fotoware.action-request+json:
+            schema:
+              $ref: "#/components/schemas/ActionRequest"
+          application/vnd.fotoware.marker-request+json:
+            schema:
+              $ref: "#/components/schemas/MarkerRequest"
+          application/vnd.fotoware.duplicate-request+json:
+            schema:
+              $ref: "#/components/schemas/DuplicateRequest"
+          application/vnd.fotoware.delete-request+json:
+            schema:
+              $ref: "#/components/schemas/DeleteRequest"
+          application/vnd.fotoware.rename-request+json:
+            schema:
+              $ref: "#/components/schemas/RenameRequest"
+          application/vnd.fotoware.move-request+json:
+            schema:
+              $ref: "#/components/schemas/MoveRequest"
+          application/vnd.fotoware.copy-request+json:
+            schema:
+              $ref: "#/components/schemas/CopyRequest"
+          application/vnd.fotoware.rotate-request+json:
+            schema:
+              $ref: "#/components/schemas/RotateRequest"
+      responses:
+        "201":
+          description: Background task created, returns reference to polling url
+          content:
+            application/vnd.fotoware.metadata-edit-response+json:
+              schema:
+                $ref: "#/components/schemas/MetadataEditResponse"
+            application/vnd.fotoware.action-response+json:
+              schema:
+                $ref: "#/components/schemas/ActionResponse"
+            application/vnd.fotoware.marker-response+json:
+              schema:
+                $ref: "#/components/schemas/MarkerResponse"
+            application/vnd.fotoware.duplicate-response+json:
+              schema:
+                $ref: "#/components/schemas/DuplicateResponse"
+            application/vnd.fotoware.delete-response+json:
+              schema:
+                $ref: "#/components/schemas/DeleteResponse"
+            application/vnd.fotoware.rename-response+json:
+              schema:
+                $ref: "#/components/schemas/RenameResponse"
+            application/vnd.fotoware.move-response+json:
+              schema:
+                $ref: "#/components/schemas/MoveResponse"
+            application/vnd.fotoware.copy-response+json:
+              schema:
+                $ref: "#/components/schemas/CopyResponse"
+            application/vnd.fotoware.rotate-response+json:
+              schema:
+                $ref: "#/components/schemas/RotateResponse"
+  /fotoweb/api/taxonomies/:
+    get:
+      tags:
+      - Taxonomies
+      summary: List all fields with taxonomy enabled
+      description: |
+        A paged list of taxononmies is returned. The list has one item for each metadata field with taxonomy enabled. The page URLs of this paged list can be obtained from the paging information in the result.
+      responses:
+        "200":
+          description: Taxonomy list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyList'
+            application/vnd.fotoware.taxonomy-list+json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyList'
+        "406":
+          description: Invalid type requested and paging header specified
+    post:
+      tags:
+      - Taxonomies
+      summary: Create a new taxonomy
+      description: |
+        Creates a new taxonomy and enables the taxonomy for a field. The url to the new taxonomy is returned in the Location header in the response.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyCreationInfo'
+          application/vnd.fotoware.taxonomy-creation-info+json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyCreationInfo'
+      responses:
+        "201":
+          description: Taxonomy created
+          headers:
+            Location:
+              description: URL of the new taxonomy
+              style: simple
+              explode: false
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+        "403":
+          description: User is not allowed to create taxonomy
+  /fotoweb/api/taxonomies/;p={p}:
+    get:
+      tags:
+      - Taxonomies
+      summary: List all fields with taxonomy enabled
+      description: |
+        This request returns a paged list of taxonomies with one item for each metadata field for which taxonomy is enabled.
+        The page URLs of this paged list can also be obtained from the paging information of each page.
+      parameters:
+      - name: p
+        in: path
+        description: Page Number
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Taxonomy list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyList'
+            application/vnd.fotoware.taxonomy-list+json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyList'
+        "406":
+          description: Invalid type requested and paging header specified
+  /fotoweb/api/taxonomies/{fieldId}/:
+    get:
+      tags:
+      - Taxonomies
+      summary: Get taxonomy of a metadata field, list root items
+      description: |
+        Returns the description of the taxonomy and/or a paged list of top level items in the taxonomy.
+
+        The page URLs of this paged list can also be obtained from the paging information of each page.
+
+        If a paging parameter is specified, then this request always returns a taxonomy item list, and other content types are not acceptable.
+      parameters:
+      - name: fieldId
+        in: path
+        description: Numeric ID of the metadata field
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: q
+        in: query
+        description: Query string
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Taxonomy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Taxonomy'
+            application/vnd.fotoware.taxonomy+json:
+              schema:
+                $ref: '#/components/schemas/Taxonomy'
+            application/vnd.fotoware.taxonomy-info+json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyInfo'
+            application/vnd.fotoware.taxonomy-item-list+json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyItemList'
+        "404":
+          description: Metadata field is not valid, or taxonomy not enabled
+        "406":
+          description: Invalid type requested and paging header specified
+    put:
+      tags:
+      - Taxonomies
+      summary: Update a taxonomy field
+      parameters:
+      - name: fieldId
+        in: path
+        description: Numeric ID of the metadata field
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyUpdate'
+          application/vnd.fotoware.taxonomy-update+json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyUpdate'
+      responses:
+        "204":
+          description: Taxonomy has been updated
+        "401":
+          description: Unauthorized
+        "403":
+          description: User is not allowed to update taxonomy
+    post:
+      tags:
+      - Taxonomies
+      summary: Create a new taxonomy item at the root of the taxonomy
+      parameters:
+      - name: fieldId
+        in: path
+        description: Numeric ID of the metadata field
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyItemCreationInfo'
+          application/vnd.fotoware.taxonomy-item-creation-info+json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyItemCreationInfo'
+      responses:
+        "201":
+          description: Taxonomy item has been created
+          headers:
+            Location:
+              description: URL of the new taxonomy item
+              style: simple
+              explode: false
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+        "403":
+          description: User is not allowed to create taxonomy item
+        "404":
+          description: Metadata field not valid, or taxonomy not enabled
+    delete:
+      tags:
+      - Taxonomies
+      summary: Delete a taxonomy
+      parameters:
+      - name: fieldId
+        in: path
+        description: Numeric ID of the metadata field
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "204":
+          description: Taxonomy has been deleted or was not enabled
+        "401":
+          description: Unauthorized
+        "403":
+          description: User is not allowed to delete taxonomy
+        "404":
+          description: Metadata field not valid
+  /fotoweb/api/taxonomies/{fieldId}/;p={p}:
+    get:
+      tags:
+      - Taxonomies
+      summary: Get taxonomy of a metadata field, list root items
+      description: |
+        Returns the description of the taxonomy and/or a paged list of top level items in the taxonomy.
+
+        The page URLs of this paged list can also be obtained from the paging information of each page.
+
+        If a paging parameter is specified,then this request always returns a taxonomy item list, and other content types are not acceptable.
+      parameters:
+      - name: fieldId
+        in: path
+        description: Numeric ID of the metadata field
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: p
+        in: path
+        description: Page Number
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: q
+        in: query
+        description: Query string
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Taxonomy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Taxonomy'
+            application/vnd.fotoware.taxonomy+json:
+              schema:
+                $ref: '#/components/schemas/Taxonomy'
+            application/vnd.fotoware.taxonomy-info+json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyInfo'
+            application/vnd.fotoware.taxonomy-item-list+json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyItemList'
+        "404":
+          description: Metadata field is not valid, or taxonomy not enabled
+        "406":
+          description: Invalid type requested and paging header specified
+  /fotoweb/api/taxonomies/{fieldId}/{itemId}:
+    get:
+      tags:
+      - Taxonomies
+      summary: Get taxonomy item and list children
+      description: |
+        Returns the description of the taxonomy item and a paged list of child items.
+      parameters:
+      - name: fieldId
+        in: path
+        description: Numeric ID of the metadata field
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: itemId
+        in: path
+        description: Unique ID of the taxonomy item
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Taxonomy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyItem'
+            application/vnd.fotoware.taxonomy-item+json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyItem'
+            application/vnd.fotoware.taxonomy-item-info+json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyItemInfo'
+            application/vnd.fotoware.taxonomy-item-list+json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyItemList'
+        "404":
+          description: Taxonomy item not found
+        "406":
+          description: Invalid type requested and paging header specified
+    put:
+      tags:
+      - Taxonomies
+      summary: Update the description of a taxonomy item
+      parameters:
+      - name: fieldId
+        in: path
+        description: Numeric ID of the metadata field
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: itemId
+        in: path
+        description: Unique ID of the taxonomy item
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyItemUpdate'
+          application/vnd.fotoware.taxonomy-item-update+json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyItemUpdate'
+      responses:
+        "204":
+          description: Taxonomy item has been updated
+        "401":
+          description: Unauthorized
+        "403":
+          description: User is not allowed to update taxonomy item
+        "404":
+          description: Taxonomy item not found
+    post:
+      tags:
+      - Taxonomies
+      summary: Create a new taxonomy item under an existing item
+      parameters:
+      - name: fieldId
+        in: path
+        description: Numeric ID of the metadata field
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: itemId
+        in: path
+        description: Unique ID of the taxonomy item
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyItemCreationInfo'
+          application/vnd.fotoware.taxonomy-item-creation-info+json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyItemCreationInfo'
+      responses:
+        "201":
+          description: Taxonomy item has been created
+          headers:
+            Location:
+              description: URL of the new taxonomy item
+              style: simple
+              explode: false
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+        "403":
+          description: User is not allowed to create taxonomy items
+        "404":
+          description: Metadata field not valid, or taxonomy not enabled
+    delete:
+      tags:
+      - Taxonomies
+      summary: Delete a taxonomy item
+      parameters:
+      - name: fieldId
+        in: path
+        description: Numeric ID of the metadata field
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: itemId
+        in: path
+        description: Unique ID of the taxonomy item
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Taxonomy item has been deleted or did not exist
+        "401":
+          description: Unauthorized
+        "403":
+          description: User is not allowed to update taxonomy items
+  /fotoweb/api/taxonomies/{fieldId}/{itemId}/;p={p}:
+    get:
+      tags:
+      - Taxonomies
+      summary: Get a taxonomy item and list its children
+      description: |
+        Returns the description of the taxonomy item and a paged list of its child items. The URLs of this paged list can also be obtained from the paging information in the result.
+      parameters:
+      - name: fieldId
+        in: path
+        description: Numeric ID of the metadata field
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: itemId
+        in: path
+        description: Unique ID of the taxonomy item
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: p
+        in: path
+        description: Page Number
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Taxonomy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyItem'
+            application/vnd.fotoware.taxonomy-item+json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyItem'
+            application/vnd.fotoware.taxonomy-item-info+json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyItemInfo'
+            application/vnd.fotoware.taxonomy-item-list+json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyItemList'
+        "404":
+          description: Taxonomy item not found
+  /fotoweb/api/taxonomies/archives/{archiveID}:
+    get:
+      tags:
+      - Taxonomies
+      summary: Get all the taxonomies for an archive
+      description: |
+        Returns a list of taxonomy fields with root items for the archive id that is passed as a parameter.
+      parameters:
+      - name: archiveID
+        in: path
+        description: Numeric ID of the archive
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Taxonomy field list with root items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Taxonomy'
+        '404':
+          description: Archive not found
+  /fotoweb/api/taxonomies/info:
+    post:
+      tags:
+      - Taxonomies
+      summary: Get a taxonomy item list by passing in an item id list
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                description: Taxonomy item ID.
+      responses:
+        '200':
+          description: Taxonomy item list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaxonomyItem'
+  /fotoweb/me/upload-to/:
+    get:
+      tags:
+        - Upload
+      summary: List of collections that are available to be uploaded to
+      externalDocs:
+        description: Detailed info on ingestion
+        url: https://learn.fotoware.com/Integrations_and_APIs/001_The_FotoWare_API/FotoWare_API_Overview/Ingestion
+      responses:
+        '200':
+          description: Collection List
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+            application/vnd.fotoware.collectionlist+json:
+              schema:
+                $ref: '#/components/schemas/CollectionList'
+  /fotoweb/archives/{archiveHREF}/:
+    post:
+      tags:
+        - Upload
+      summary: |
+        Assets are uploaded by making a POST request to the URL of the archive. Each request can contain one or more assets. Upload uses HTTP Multipart requests, as defined in RFC1341.
+        It is also possible to create a new folder (or a hierarchy of nested folders) and upload assets to the new folder.
+      description: |
+        Note:
+          * The upload location URL (upload_location_url) must be the URL found in the href attribute of the archive representation. Please do not hard-code upload location URLs.
+          * To get the upload request URL of an already known archive (with a known API URL), first request the archive representation of the archive, then use the value of the href-attribute for the upload request
+          * If the archive has a custom input folder, then assets can only be uploaded to the root URL of the archive. It is not possible to upload to a specific sub folder or to create a new sub folder during upload.
+      externalDocs:
+        description: Upload assets using the API
+        url: https://learn.fotoware.com/Integrations_and_APIs/001_The_FotoWare_API/FotoWare_API_Overview/Uploading_assets_using_the_API
+      parameters:
+        - name: archiveHREF
+          in: path
+          description: The url to the archive
+          required: true
+          schema:
+            type: string
+        - name: Content-Type
+          in: header
+          description: |
+            Ignored by FotoWeb. Should match the MIME type of the file, but can safely be set to application/octet-stream regardless of file type.
+          required: false
+          schema:
+            type: string
+      responses:
+        '202':
+          description: |
+            202 Accepted.
+            Once the file transfer has finished, the API returns a response with status code 202 Accepted. At this time, the upload is not finished. The server has to do further processing, such as applying metadata, doing consistency and security checks, copying the file to its storage location, and generating renditions. It is not guaranteed that all of these operations will complete successfully. Clients should not attempt to make any API requests that rely on the existence of the uploaded assets before the upload has finished successfully. The response includes a URL which can be used for polling the status of the upload. Use the background-tasks endpoint.
+          content:
+            application/vnd.fotoware.upload-response+json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+  /fotoweb/api/uploads:
+    post:
+      tags:
+        - Upload
+      summary: |
+        Create a new upload task
+      description: |
+        This initial upload request begins the process for uploading a single asset by setting up an upload task with a unique Upload ID which is used in all following API requests.
+      externalDocs:
+        description: Send initial upload request
+        url: https://learn.fotoware.com/Integrations_and_APIs/001_The_FotoWare_API/FotoWare_API_Overview/Upload_API#1._Send_initial_upload_request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchUploadCreate'
+      responses:
+        '200':
+          description: |
+            OK. Call successfuly completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchUploadInfo'
+        '400':
+          description: |
+            Bad Request. For instance if a parameter is invalid or the destination url is invalid
+        '403':
+          description: |
+            Forbidden. If the user does not have permission to upload, or the checkoutId exists but does not belong to the user
+  /fotoweb/api/uploads/{uploadId}/status:
+    get:
+      tags:
+        - Upload
+      summary: |
+        Get the upload task status
+      description: |
+        This request is made to poll the status of an upload task.
+      externalDocs:
+        description: Poll status for completion
+        url: https://learn.fotoware.com/Integrations_and_APIs/001_The_FotoWare_API/FotoWare_API_Overview/Upload_API#4._Poll_status_for_completion
+      parameters:
+        - name: uploadId
+          in: path
+          description: Unique ID of the upload task
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: |
+            OK. Call successfuly completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchUploadStatus'
+        '403':
+          description: |
+            Forbidden. The <UPLOAD_ID> does not exist OR belongs to a different user
+  /fotoweb/api/uploads/{uploadId}/chunks/{chunkIndex}:
+    post:
+      tags:
+        - Upload
+      summary: |
+        Upload a chunk to an upload task
+      description: |
+        This request uploads a chunk of the file being uploaded. The chunk size and number of chunks to upload is returned in the response
+        to the create upload task call.
+      externalDocs:
+        description: Send file data
+        url: https://learn.fotoware.com/Integrations_and_APIs/001_The_FotoWare_API/FotoWare_API_Overview/Upload_API#2._Send_file_data
+      parameters:
+        - name: uploadId
+          in: path
+          description: Unique ID of the upload task
+          required: true
+          schema:
+            type: string
+        - name: chunkIndex
+          in: path
+          description: Numeric index of the uploaded chunk
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fileName:
+                  type: string
+                  format: binary
+      responses:
+        '204':
+          description: |
+            No Content. Call successfuly completed
+        '400':
+          description: |
+            Bad Request. For instance if the chunk index is invalid or the chunk size is wrong
+        '404':
+          description: |
+            Not Found. There is no upload task with ID <UPLOAD_ID> that belongs to the requesting user
+        '409':
+          description: |
+            Conflict. A chunk with the same index has already been received successfully or the same chunk is already being uploaded by another process
+        '415':
+          description: |
+            Unsupported Media Type. The request body is not multipart/form-data
+  /fotoweb/api/uploads/{uploadId}/xmp:
+    post:
+      tags:
+        - Upload
+      summary: |
+        Upload the XMP file to an upload task
+      description: |
+        This is an optional request to upload an XMP sidecar file that contains the metadata of the asset file. XMP sidecars are assumed to be 
+        small, so they can be uploaded in one request. If a file has an XMP sidecar, then the initial upload request must declare it.
+      externalDocs:
+        description: Send XMP sidecar file (if required)
+        url: https://learn.fotoware.com/Integrations_and_APIs/001_The_FotoWare_API/FotoWare_API_Overview/Upload_API#3._Send_XMP_sidecar_file_(if_required)
+      parameters:
+        - name: uploadId
+          in: path
+          description: Unique ID of the upload task
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fileName:
+                  type: string
+                  format: binary
+      responses:
+        '204':
+          description: |
+            No Content. Call successfuly completed
+        '400':
+          description: |
+            Bad Request. For instance if metadata is invalid or metadata was not expected for the upload
+        '404':
+          description: |
+            Not Found. There is no upload task with ID <UPLOAD_ID> that belongs to the requesting user
+        '409':
+          description: |
+            Conflict. There was a conflict, either XMP was already uploaded or the upload already finished
+        '415':
+          description: |
+            Unsupported Media Type. The request body is not multipart/form-data
+components:
+  schemas:
+    # Albums
+    Sharing:
+      type: object
+      properties:
+        message:
+          type: object
+          properties:
+            title:
+              type: string
+            body:
+              type: string
+        shares:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              href:
+                type: string
+              name:
+                type: string
+              acl:
+                type: array
+                items: {}
+                example:
+                  - view
+                  - preview
+              sharedHREF:
+                type: string
+        showcase:
+          type: object
+          properties:
+            from:
+              type: string
+            to:
+              type: string
+            acl:
+              type: array
+              items: {}
+              example:
+                - view
+                - preview
+                - download
+            sharedHREF:
+              type: string
+            type:
+              type: string
+        href:
+          type: string
+        originalHref:
+          type: string
+    SharingLinkList:
+      type: object
+      properties:
+        addedShares:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              acl:
+                type: array
+                items: {}
+                example:
+                  - view
+                  - preview
+                  - download
+              sharedHREF:
+                type: string
+    SharingUpdate:
+      type: object
+      properties:
+        addShares:
+          type: array
+          description: Used to add shares, or update existing ones
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: everyone, user or group
+              href:
+                type: string
+                description: user or group to share with
+              acl:
+                type: array
+                items: {}
+                example:
+                  - view
+                  - preview
+                  - download
+        removeShares:
+          type: array
+          description: Used to remove shares
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: everyone, user or group
+              href:
+                type: string
+                description: When removing user/group permissions/shares we need the unique reference
+        message:
+          type: object
+          description: Optional, add a message to the added shares
+          properties:
+            body:
+              type: string
+              description: Body of the message
+            title:
+              type: string
+              description: Title of the message
+
+    # Annotations
+    Annotation:
+      type: object
+      properties:
+        height:
+          type: integer
+        href:
+          type: string
+        width:
+          type: integer
+        allowUpdate:
+          type: boolean
+        created:
+          type: string
+        owner:
+          type: object
+          properties:
+            name:
+              type: string
+            avatarHref:
+              type: string
+        text:
+          type: string
+        props:
+          type: object
+          properties:
+            comments:
+              type: object
+              properties:
+                count:
+                  type: integer
+                href:
+                  type: string
+                enabled:
+                  type: boolean
+        modified:
+          type: string
+        fragmentHref:
+          type: string
+        allowDelete:
+          type: boolean
+        type:
+          type: string
+        left:
+          type: integer
+        color:
+          type: string
+        top:
+          type: integer
+    AnnotationList:
+      type: object
+      description: AnnotationList
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              allowUpdate:
+                type: boolean
+              owner:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  avatarHref:
+                    type: string
+              color:
+                type: string
+              modified:
+                type: string
+              props:
+                type: object
+                properties:
+                  comments:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                      href:
+                        type: string
+                      enabled:
+                        type: boolean
+              type:
+                type: string
+              text:
+                type: string
+              top:
+                type: integer
+              allowDelete:
+                type: boolean
+              href:
+                type: string
+              width:
+                type: integer
+              left:
+                type: integer
+              created:
+                type: string
+              height:
+                type: integer
+              fragmentHref:
+                type: string
+
+    # API Entry Points
+    APIDescriptor:
+      type: object
+      properties:
+        server:
+          type: string
+        screens:
+          type: string
+        utc_offset:
+          type: integer
+        archives:
+          type: string
+        albums:
+          type: string
+        taxonomies:
+          type: string
+        services:
+          type: object
+          properties:
+            login:
+              type: string
+            search:
+              type: string
+            rendition_request:
+              type: string
+        href:
+          type: string
+        background_tasks:
+          type: string
+        searchURL:
+          type: string
+    FullAPIDescriptor:
+      type: object
+      properties:
+        actionCropPresets:
+          type: string
+        actions:
+          type: string
+        alerts:
+          type: string
+        albums:
+          type: string
+          description: URL of the list of albums accessible by current user. This list contains all albums that the user can access.
+        albums_archived:
+          type: string
+        albums_contribute:
+          type: string
+        albums_deleted:
+          type: string
+          description: URL of the list of deleted albums owned by the current user.
+        albums_own:
+          type: string
+          description: URL of the list of albums owned by the current user.
+        albums_shared:
+          type: string
+          description: URL of the list of albums shared with the current user.
+        appearance:
+          type: object
+          properties:
+            loginLogo:
+              type: string
+            mainLogo:
+              type: string
+            mobileLogo:
+              type: string
+            customCss:
+              type: string
+            homepageImage:
+              type: string
+            favicon:
+              type: string
+        archives:
+          type: string
+          description: |
+            URL of the list of archives that the current user can access. If server-to-server authentication is used, then this list contains all archives on the site.
+        background_tasks:
+          type: string
+        bookmarks:
+          type: string
+        copy_to:
+          type: string
+          description: URL of list of collections which to which assets can be copied.
+        cropDownloadPresets:
+          type: string
+        destinations:
+          type: string
+        groups:
+          type: string
+        groups_search:
+          type: string
+        href:
+          type: string
+        markers:
+          type: string
+        move_to:
+          type: string
+          description: URL of list of collections which to which assets can be moved.
+        order:
+          type: object
+          properties:
+            views:
+              type: object
+              properties:
+                cart:
+                  type: string
+                history:
+                  type: string
+            config:
+              type: string
+            cart:
+              type: string
+            history:
+              type: string
+            admin:
+              type: object
+              properties:
+                history:
+                  type: string
+                pending:
+                  type: string
+                approved:
+                  type: string
+                rejected:
+                  type: string
+                views:
+                  type: object
+                  properties:
+                    pending:
+                      type: string
+        people_search:
+          type: string
+        permissions:
+          type: object
+          properties:
+            delegateDownload:
+              type: boolean
+              description: User has permission to share an album with download permissions
+            moderateComments:
+              type: boolean
+            canTogglePositionedMarkers:
+              type: boolean
+            canManageExports:
+              type: boolean
+            hasAdvancedVideoControls:
+              type: boolean
+            hasManageArchivesPermission:
+              type: boolean
+            hasManageServicesPermission:
+              type: boolean
+            hasManageSettingsPermission:
+              type: boolean
+            allowRetranscode:
+              type: boolean
+            showAdvancedBreadcrumb:
+              type: boolean
+            shareCropAndDownloadPresets:
+              type: boolean
+            print:
+              type: boolean
+            hasAuditPermission:
+              type: boolean
+            albums:
+              type: object
+              properties:
+                create:
+                  type: boolean
+                comment:
+                  type: boolean
+                shareWithGuests:
+                  type: boolean
+                showOnHomepage:
+                  type: boolean
+                addAssets:
+                  type: boolean
+            canLinkInAdobeCC:
+              type: boolean
+            allowTaxonomyEditing:
+              type: boolean
+              description: User has permission to modify taxonomies
+            allowShareBookmark:
+              type: boolean
+            hasManageWorkflowsPermission:
+              type: boolean
+        pins:
+          type: string
+        searchURL:
+          type: string
+          description: |
+            URL template for global searches in all collections on the site.
+            By replacing the placeholders in the template with search parameters, a client can search in all collections.
+        security:
+          type: object
+          properties:
+            allowFileSystemDestinations:
+              type: boolean
+        server:
+          type: string
+        services:
+          type: object
+          properties:
+            navigate_prev:
+              type: string
+            retranscode:
+              type: string
+            rendition_request:
+              type: string
+            keepalive:
+              type: object
+              properties:
+                href:
+                  type: string
+                interval:
+                  type: integer
+            logout:
+              type: string
+            search:
+              type: string
+            navigate_next:
+              type: string
+        signups:
+          type: string
+        siteConfigurationHref:
+          type: string
+        taxonomies:
+          type: string
+        tokens:
+          type: string
+        upload:
+          type: object
+          properties:
+            preserveMetadata:
+              type: boolean
+        upload_to:
+          type: string
+          description: URL of list of collections which to which assets can be uploaded.
+        upload_tokens:
+          type: string
+        user:
+          type: object
+          properties:
+            fullName:
+              type: string
+              description: Full name of the user that the client is authenticated as
+            email:
+              type: string
+            isGuest:
+              type: boolean
+            href:
+              type: string
+              description: URL of the user that the client is authenticated as
+            userName:
+              type: string
+              description: User name of the user that the client is authenticated as
+            firstName:
+              type: string
+              description: First name of the user that the client is authenticated as
+            lastName:
+              type: string
+              description: Last name of the user that the client is authenticated as
+            userId:
+              type: integer
+              description: ID of the user that the client is authenticated as
+            userAvatarHref:
+              type: string
+        userManagement:
+          type: object
+          properties:
+            userList:
+              type: string
+            groupList:
+              type: string
+            guestUser:
+              type: string
+            adminUser:
+              type: string
+            everyoneGroup:
+              type: string
+            registeredUsersGroup:
+              type: string
+            siteOwner:
+              type: string
+        user_preferences:
+          type: string
+        users_search:
+          type: string
+        users:
+          type: string
+        utc_offset:
+          type: integer
+        widgets:
+          type: object
+          properties:
+            selection:
+              type: string
+              description: URL of the selection widget for CMS integration
+            fwdt:
+              type: object
+              properties:
+                views:
+                  type: object
+                  properties:
+                    install:
+                      type: string
+                services:
+                  type: object
+                  properties:
+                    open:
+                      type: string
+                    edit:
+                      type: string
+                    crop:
+                      type: string
+                win:
+                  type: object
+                  properties:
+                    installer:
+                      type: object
+                      properties:
+                        version:
+                          type: string
+                        href:
+                          type: string
+                    minVersion:
+                      type: string
+                osx:
+                  type: object
+                  properties:
+                    minVersion:
+                      type: string
+                    installer:
+                      type: object
+                      properties:
+                        version:
+                          type: string
+                        href:
+                          type: string
+        views:
+          type: object
+          properties:
+            manageInvitations:
+              type: string
+            changePassword:
+              type: string
+            manageSubscription:
+              type: string
+            pro:
+              type: string
+            manage_exports:
+              type: string
+            admin_webhooks:
+              type: string
+            edit_taxonomy_item:
+              type: string
+            createInvitations:
+              type: string
+            subscription:
+              type: object
+              properties:
+                siteCreatedDate:
+                  type: string
+                state:
+                  type: string
+                origin:
+                  type: string
+            loggedOut:
+              type: string
+            upload:
+              type: string
+            selection:
+              type: string
+            signUpAdmin:
+              type: string
+            manageConsentForms:
+              type: string  
+        apiFeatureLevels:
+          type: object
+          properties:
+            consentFormsApiFeatureLevel:
+              type: integer      
+
+    # Assets
+    Asset:
+      type: object
+      properties:
+        archiveHREF:
+          type: string
+          description: |
+            Links to Archive. URL of the archive which contains the asset. Each asset is contained in only one archive.
+            If the asset was discovered in a different kind of collection (such as an album, a search result or a folder), then this attribute can be used for finding the root URL of the original archive.
+        ancestors:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              href:
+                type: string
+              data:
+                type: string
+        attributes:
+          type: object
+          properties:
+            imageattributes:
+              type: object
+              description: If present, contains information specific to image assets, such as resolution and color space.
+              properties:
+                pixelheight:
+                  type: integer
+                resolution:
+                  type: integer
+                flipmirror:
+                  type: integer
+                rotation:
+                  type: integer
+                colorspace:
+                  type: string
+                pixelwidth:
+                  type: integer
+        builtinFields:
+          type: array
+          items:
+            type: object
+            properties:
+              required:
+                type: boolean
+              value:
+                type: string
+              field:
+                type: string
+        capabilities:
+          type: object
+          properties:
+            printWithAnnotations:
+              type: boolean
+            crop:
+              type: boolean
+            print:
+              type: boolean
+        created:
+          type: string
+          description: The date and time on which the asset was created
+        createdBy:
+          type: string
+        doctype:
+          type: string
+          description: |
+            Type of this asset. For possible values, please see document types. This attribute determines which sub sections of the attributes section are present.
+        downloadcount:
+          type: integer
+        dropHREF:
+          type: string
+        filesize:
+          type: integer
+          description: Size of the file in bytes
+        filename:
+          type: string
+          description: Name of the file without path
+        href:
+          type: string
+          description: |
+            Links to asset. Original URL of the asset within the originating archive. This URL is used for most workflow operations.
+        linkstance:
+          type: string
+          description: |
+            Links to asset. The asset is then said to have multiple instances, one instance per distinct collection.
+            For archives and folders, linkstance is always identical to href, which is called the original instance of the asset.
+            Use linkstance to follow links from asset lists to individual assets
+        consentStatus:
+          $ref: '#/components/schemas/ConsentStatus'
+        physicalFileId:
+          type: string
+          description: |
+            A physical file is a distinct representation of an asset in a single storage location with its own state (metadata, file properties, etc.).
+            A physical file ID is a string of the form <POOL_ID><RELATIVE_PATH> where
+            <POOL_ID> is the pool ID as returned by the /fotoweb/api/config/pools API today. A hash-based pseudo ID is used on-premises.
+            <RELATIVE_PATH> is the canonical path to the file within the pool starting with /, same as in its FWP URL.
+        metadata:
+          type: object
+          description: |
+            Contains values of metadata fields of this asset which are exposed by the API. Usually, the metadata set associated with the archive to which the asset belongs controls which fields are available.
+        metadataeditcount:
+          type: integer
+        metadataEditor:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Display name of the available metadata editor for this asset
+            href:
+              type: string
+              description: |
+                Links to metadata editor. URL of the metadata editor that is available for this asset.
+                The metadata editor is usually defined by the metadata set associated with the archive to which the asset belongs.
+                By sending a request to this URL, a client application can determine what fields are available for editing and other information for editing and validation of metadata input.
+        modified:
+          type: string
+          description: The date and time on which the asset was last modified
+        modifiedBy:
+          type: string
+        permissions:
+          type: array
+          description: List of permissions that the requesting user has on this asset. For possible values, please see permissions.
+          items: {}
+          example:
+            - View
+            - Preview
+            - CropAndDownload
+        pincount:
+          type: integer
+        previewcount:
+          type: integer
+        previews:
+          type: array
+          description: List of available thumbnail and preview images of this asset. For details, please see preview lists
+          items:
+            type: object
+            properties:
+              size:
+                type: integer
+              width:
+                type: integer
+              height:
+                type: integer
+              href:
+                type: string
+              square:
+                type: boolean
+        previewToken:
+          type: string
+        props:
+          type: object
+          description: Common properties of this resource
+          properties:
+            shares:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+            comments:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+            annotations:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+        quickRenditions:
+          type: array
+          items:
+            type: object
+            properties:
+              size:
+                type: integer
+              width:
+                type: integer
+              height:
+                type: integer
+              href:
+                type: string
+              square:
+                type: boolean
+              name:
+                type: string
+        renditions:
+          type: array
+          description: List of available renditions of this asset. Renditions are used for downloading assets, either original or processed.
+          items:
+            type: object
+            properties:
+              href:
+                type: string
+                description: Rendition URL
+                format: url
+              profile:
+                type: string
+              width:
+                type: integer
+                description: Width of the rendition in pixels (if applicable).
+              description:
+                type: string
+                description: Human-readable detailed description of the rendition.
+              height:
+                type: integer
+                description: Height of the rendition in pixels (if applicable).
+              default:
+                type: boolean
+                description: If true, this rendition is the default rendition that should be offered to users in a selection interface.
+              original:
+                type: boolean
+                description: If true, this rendition is the original asset file without any processing applied.
+              sizeFixed:
+                type: boolean
+              display_name:
+                type: string
+                description: Human readable display name of the rendition.
+        revisioncount:
+          type: integer
+        thumbnailFields:
+          type: object
+          properties:
+            label:
+              type: object
+              properties:
+                value:
+                  type: string
+            firstLine:
+              type: object
+              properties:
+                value:
+                  type: string
+            secondLine:
+              type: object
+              properties:
+                value:
+                  type: string
+        uniqueid:
+          type: string
+          description: Unique ID of the asset. This ID is globally unique and created by IndexManager upon indexing
+        workflowcount:
+          type: integer
+    AssetList:
+      required:
+        - data
+        - paging
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Asset'
+        paging:
+          $ref: '#/components/schemas/PagingInfo'
+      description: Paged list of assets
+    AssetRepresentionApiModel:
+      type: object
+      description: API model to describe a for archive represention of an asset
+      properties:
+        archiveHref:
+          type: string
+          description: URL of the archive 
+        archiveId:
+          type: integer
+          description: Unique ID of the archive
+        archiveName:
+          type: string
+          description: The name of the archive
+        assetHref:
+          type: string
+          description: URL of the asset representation in the archive
+    AssetUpdate:
+      type: object
+      description: |
+        The AssetUpdate request must contain a body which describes which metadata fields shall be updated and what their values shall be.
+    Previews:
+      type: array
+      items:
+        type: object
+        properties:
+          square:
+            type: boolean
+            description: Specifies whether the preview image retains its original proportions (false) or is cropped to a square (true).
+          size:
+            type: integer
+            description: |
+              Size of the preview image (maximum of width and height).
+              Can be used for selecting the appropriate preview image based on factors such as screen resolution or the size of the context where the preview image should be rendered.
+          width:
+            type: integer
+            description: Display width of the preview image in pixels
+          height:
+            type: integer
+            description: Display height of the preview image in pixels
+          href:
+            type: string
+            description: URL for requesting the preview image.
+
+    # Background tasks
+    ActionRequest:
+      type: object
+      properties:
+        assets:
+          type: array
+          items:
+            type: object
+            properties:
+              href:
+                type: string
+        action-href:
+          type: string
+    ActionResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        max-interval:
+          type: integer
+        maxInterval:
+          type: integer
+        location:
+          type: string
+    CopyRequest:
+      type: object
+      description: Get a list of available destinations by using the copy-to reference from APIDescriptor
+      properties:
+        assets:
+          type: array
+          items:
+            type: object
+            properties:
+              href:
+                type: string
+        job-destination:
+          type: string
+    CopyResponse:
+      type: object
+      properties:
+        location:
+          type: string
+        status:
+          type: string
+        max-interval:
+          type: integer
+        maxInterval:
+          type: integer
+    DeleteRequest:
+      type: object
+      properties:
+        assets:
+          type: array
+          items:
+            type: object
+            properties:
+              href:
+                type: string
+    DeleteResponse:
+      type: object
+      properties:
+        location:
+          type: string
+        status:
+          type: string
+        max-interval:
+          type: integer
+        maxInterval:
+          type: integer
+    DuplicateRequest:
+      type: object
+      properties:
+        assets:
+          type: array
+          items:
+            type: object
+            properties:
+              href:
+                type: string
+    DuplicateResponse:
+      type: object
+      properties:
+        location:
+          type: string
+        status:
+          type: string
+        max-interval:
+          type: integer
+        maxInterval:
+          type: integer
+    MarkerRequest:
+      type: object
+      properties:
+        assets:
+          type: array
+          items:
+            type: object
+            properties:
+              href:
+                type: string
+        marker-href:
+          type: string
+    MarkerResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        max-interval:
+          type: integer
+        maxInterval:
+          type: integer
+        location:
+          type: string        
+    MetadataEditRequest:
+      type: object
+      properties:
+        assets:
+          type: array
+          items:
+            type: object
+            properties:
+              href:
+                type: string
+        job-metadata:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: integer
+              value:
+                type: string
+    MetadataEditResponse:
+      type: object
+      properties:
+        max-interval:
+          type: integer
+        maxInterval:
+          type: integer
+        location:
+          type: string
+        status:
+          type: string
+    MoveRequest:
+      type: object
+      description: Receive a list of available destinations using the move-to endpoint from the API descriptor
+      properties:
+        assets:
+          type: array
+          items:
+            type: object
+            properties:
+              href:
+                type: string
+        job-destination:
+          type: string
+    MoveResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        max-interval:
+          type: integer
+        maxInterval:
+          type: integer
+        location:
+          type: string
+    RenameRequest:
+      type: object
+      properties:
+        assets:
+          type: array
+          items:
+            type: object
+            properties:
+              href:
+                type: string
+        job-filename:
+          type: string
+    RenameResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        max-interval:
+          type: integer
+        maxInterval:
+          type: integer
+        location:
+          type: string
+    RotateRequest:
+      type: object
+      properties:
+        direction:
+          type: string
+        assets:
+          type: array
+          items:
+            type: object
+            properties:
+              href:
+                type: string
+    RotateResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        max-interval:
+          type: integer
+        maxInterval:
+          type: integer
+        location:
+          type: string
+    TaskStatus:
+      description: Status for a pending or done job
+      type: object
+      properties:
+        job:
+          type: object
+          properties:
+            status:
+              description: Tells you if the job is 'pending' or 'done'
+              type: string
+            result:
+              type: array
+              items:
+                type: object
+                properties:
+                  changed-builtinFields:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        value:
+                          type: string
+                  changed-fields:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: integer
+                        value:
+                          type: string
+                  href:
+                    type: string
+                  done:
+                    type: boolean
+                  changed-thumbnailFields:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        value:
+                          type: string
+        task:
+          type: object
+          properties:
+            status:
+              type: string
+            created:
+              type: string
+            modified:
+              type: string
+            href:
+              type: string
+            user:
+              type: integer
+            type:
+              type: string
+            id:
+              type: string
+
+    # Collections
+    Collection:
+      type: object
+      properties:
+        alt_orders:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              key:
+                type: string
+              asc:
+                type: object
+                properties:
+                  data:
+                    type: string
+                  urlComponents:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        key:
+                          type: string
+                  href:
+                    type: string
+              desc:
+                type: object
+                properties:
+                  href:
+                    type: string
+                  data:
+                    type: string
+                  default:
+                    type: boolean
+                  urlComponents:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+        alertHref:
+          description: alertHref
+        archived:
+          type: string
+          description: |
+            If not null, then the collection has been archived, and this is the date and time on which the collection was archived.
+            Unless stated otherwise, a collection list never contains archived collections, so API clients can ignore this field.
+        assets:
+          type: object
+          description: List of assets in the collection
+        assetCount:
+          type: integer
+          description: Number of assets in the collection
+        canBeArchived:
+          type: boolean
+          description: true if it is possible to archive the collection, false otherwise.
+        canBeDeleted:
+          type: boolean
+          description: true if it is possible to delete the collection, false otherwise.
+        canCopyTo:
+          type: boolean
+          description: true if it is possible to copy assets to this collection, false otherwise.
+        canCreateFolders:
+          type: boolean
+          description: true if it is possible to create new folders when copying, moving or uploading assets to this collection, false otherwise.
+        canHaveChildren:
+          type: boolean
+          description: true if this collection may have sub collection, false otherwise
+        canIngestToChildren:
+          type: boolean
+          description: true if there may be sub collections where at least one of canCopyTo, canMoveTo or canUploadTo is true, false otherwise.
+        canMoveTo:
+          type: boolean
+          description: true if it is possible to move assets to this collection, false otherwise.
+        canSelect:
+          type: boolean
+          description: true if it is possible to select assets in user interfaces for this collection, false otherwise
+        canUploadTo:
+          type: boolean
+          description: true if it is possible to upload assets to this collection, false otherwise.
+        children:
+          type: object
+          description: List of sub collections in the collection
+        childCount:
+          type: integer
+          description: Number of sub collections in the collection
+        clearSearch:
+          type: object
+          description: clearSearch
+          properties:
+            href:
+              type: string
+              description: href
+            data:
+              type: string
+              description: data
+        create:
+          type: array
+          description: create
+          items:
+            type: object
+            properties:
+              href:
+                type: string
+              type:
+                type: string
+        created:
+          type: string
+          description: Date and time on which the collection was created
+        data:
+          type: string
+          description: |
+            User-specific data URL of the collection. Usually, this is the URL that the collection was requested from.
+            In collection lists, this is the URL that should be followed in order to get assets and sub collections of the collection.
+        dataTemplate:
+          type: string
+          description: dataTemplate
+        deleted:
+          type: string
+          description: |
+            If not null, then the collection has been deleted, and this is the date and time on which the collection was deleted.
+            Unless stated otherwise, a collection list never contains deleted collections, so API clients can ignore this field.
+        description:
+          type: string
+          description: Long description of the collection
+        edit:
+          type: boolean
+          description: edit
+        hasChildren:
+          type: boolean
+          description: true if the collection can have sub collections, false otherwise
+        href:
+          type: string
+          description: Links to a Collection. Canonical public URL of the collection.
+        isFolderNavigationEnabled:
+          type: boolean
+          description: true if folder navigation is enabled in user interfaces for this collection, false otherwise
+        isLinkCollection:
+          type: boolean
+          description: true if this collection is a link collection (e.g., an album), false otherwise.
+        isSearchable:
+          type: boolean
+          description: true if the collection supports search, false otherwise
+        isSelectable:
+          type: boolean
+          description: true if assets in the collection can be selected in the selection widget, false otherwise
+        isSmartFolderNavigationEnabled:
+          type: boolean
+          description: isSmartFolderNavigationEnabled
+        matchingHref:
+          type: string
+          description: matchingHref
+        metadataEditor:
+          type: object
+          description: metadataEditor
+          properties:
+            name:
+              type: string
+              description: Display name of the available metadata editor for assets in the collection
+            href:
+              type: string
+              description: |
+                URL of the metadata editor that is available for assets in the collection.
+                The metadata editor is usually defined by the metadata view associated with the archive to which the collection belongs. By sending a request to this URL, a client application can determine what fields are available for editing and other information for editing and validation of metadata input.
+        modified:
+          type: string
+          description: Date and time on which the collection last modified. If the collection was never modified, then this is equal to created.
+        name:
+          type: string
+          description: Displayable title of the collection
+        orderRootHref:
+          type: string
+          description: orderRootHref
+        originalURL:
+          type: string
+          description: |
+            If the collection is a search result, then this is the URL of the collection the search was performed in (without any search parameters).
+        permissions:
+          type: array
+          description: List of permissions that the requesting user has on this asset
+          items: 
+            $ref: '#/components/schemas/Permission'
+        pin:
+          description: pin
+        posterAsset:
+          type: string
+          description: URL of the asset which is currently used as poster image for this collection. May be null.
+        posterImages:
+          type: array
+          description: posterImages
+          items:
+            type: object
+            properties:
+              size:
+                type: integer
+              width:
+                type: integer
+              height:
+                type: integer
+              href:
+                type: string
+              square:
+                type: boolean
+        propertyValidations:
+          type: array
+          items:
+            type: object
+            properties:
+              min:
+                type: integer
+              max:
+                type: integer
+              regex:
+                type: string
+              name:
+                type: string
+        props:
+          type: object
+          description: Common properties of this resource.
+          properties:
+            annotations:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+            shares:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+            comments:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+        reorder:
+          description: reorder
+        searchQuery:
+          type: string
+          description: searchQuery
+        searchString:
+          type: string
+          description: searchString
+        searchURL:
+          type: string
+          description: |
+            URL template for collection queries (searches) in the collection.
+            By replacing the placeholders in the template with search parameters, a client can search in the collection. If this attribute is null, then the collection does not support searching.
+        smartFolderHeader:
+          type: string
+          description: smartFolderHeader
+        type:
+          type: string
+          description: Type of the collection
+        taxonomies:
+          type: array
+          description: |
+            Contains top-level taxonomy nodes for all metadata fields which are enabled in the API for this collection and which have taxonomy enabled.
+          items:
+            $ref: '#/components/schemas/Taxonomy'
+        uploadHref:
+          type: string
+          description: URL to use in upload requests
+    CollectionInfo:
+      type: object
+      properties:
+        ancestors:
+          type: array
+          description: |
+            Lists the collection to which the asset belongs, is parent collection and the remaining ancestors in the collection hierarchy.
+            Can be used for rendering a breadcrumb, implementing an "up" button or finding the collection to which this instance of the asset belongs.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              href:
+                type: string
+              data:
+                type: string
+        alertHref:
+          description: alertHref
+        alt_orders:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              key:
+                type: string
+              asc:
+                type: object
+                properties:
+                  data:
+                    type: string
+                  urlComponents:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        key:
+                          type: string
+                  href:
+                    type: string
+              desc:
+                type: object
+                properties:
+                  href:
+                    type: string
+                  data:
+                    type: string
+                  default:
+                    type: boolean
+                  urlComponents:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+        archived:
+          type: string
+          description: |
+            If not null, then the collection has been archived, and this is the date and time on which the collection was archived.
+            Unless stated otherwise, a collection list never contains archived collections, so API clients can ignore this field.
+        canBeArchived:
+          type: boolean
+          description: true if it is possible to archive the collection, false otherwise.
+        canBeDeleted:
+          type: boolean
+          description: true if it is possible to delete the collection, false otherwise.
+        canCopyTo:
+          type: boolean
+          description: true if it is possible to copy assets to this collection, false otherwise.
+        canCreateFolders:
+          type: boolean
+          description: |
+            true if it is possible to create new folders when copying, moving or uploading assets to this collection, false otherwise.
+        canHaveChildren:
+          type: boolean
+          description: true if this collection may have sub collection, false otherwise
+        canIngestToChildren:
+          type: boolean
+          description: true if there may be sub collections where at least one of canCopyTo, canMoveTo or canUploadTo is true, false otherwise.
+        canMoveTo:
+          type: boolean
+          description: true if it is possible to move assets to this collection, false otherwise.
+        canSelect:
+          type: boolean
+          description: true if it is possible to select assets in user interfaces for this collection, false otherwise
+        canUploadTo:
+          type: boolean
+          description: true if it is possible to upload assets to this collection, false otherwise.
+        clearSearch:
+          type: object
+          properties:
+            href:
+              type: string
+            data:
+              type: string
+        create:
+          type: array
+          description: create
+          items:
+            type: object
+            properties:
+              href:
+                type: string
+              type:
+                type: string
+        created:
+          type: string
+          description: Date and time on which the collection was created
+        data:
+          type: string
+          description: |
+            User-specific data URL of the collection. Usually, this is the URL that the collection was requested from.
+            In collection lists, this is the URL that should be followed in order to get assets and sub collections of the collection.
+        dataTemplate:
+          type: string
+        deleted:
+          type: string
+          description: |
+            If not null, then the collection has been deleted, and this is the date and time on which the collection was deleted.
+            Unless stated otherwise, a collection list never contains deleted collections, so API clients can ignore this field.
+        description:
+          type: string
+          description: Long description of the collection
+        edit:
+          type: boolean
+          description: edit
+        hasChildren:
+          type: boolean
+          description: true if the collection can have sub collections, false otherwise
+        href:
+          type: string
+          description: Canonical public URL of the collection.
+        isFolderNavigationEnabled:
+          type: boolean
+          description: true if folder navigation is enabled in user interfaces for this collection, false otherwise
+        isLinkCollection:
+          type: boolean
+          description: true if this collection is a link collection (e.g., an album), false otherwise.
+        isSearchable:
+          type: boolean
+          description: true if the collection supports search, false otherwise
+        isSelectable:
+          type: boolean
+          description: true if assets in the collection can be selected in the selection widget, false otherwise
+        isSmartFolderNavigationEnabled:
+          type: boolean
+        matchingHref:
+          type: string
+        metadataEditor:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Display name of the available metadata editor for assets in the collection
+            href:
+              type: string
+              description: |
+                URL of the metadata editor that is available for assets in the collection.
+                The metadata editor is usually defined by the metadata view associated with the archive to which the collection belongs. By sending a request to this URL, a client application can determine what fields are available for editing and other information for editing and validation of metadata input.
+        modified:
+          type: string
+          description: Date and time on which the collection last modified. If the collection was never modified, then this is equal to created.
+        name:
+          type: string
+          description: Displayable title of the collection
+        orderRootHref:
+          type: string
+        originalURL:
+          type: string
+          description: |
+            If the collection is a search result, then this is the URL of the collection the search was performed in (without any search parameters).
+        permissions:
+          type: array
+          description: List of permissions that the requesting user has on this asset
+          items:
+            $ref: '#/components/schemas/Permission'
+        pin:
+          description: pin
+        posterAsset:
+          type: string
+          description: URL of the asset which is currently used as poster image for this collection. May be null.
+        posterImages:
+          type: array
+          description: posterImages
+          items:
+            type: object
+            properties:
+              size:
+                type: integer
+              width:
+                type: integer
+              height:
+                type: integer
+              href:
+                type: string
+              square:
+                type: boolean
+        propertyValidations:
+          type: array
+          items:
+            type: object
+            properties:
+              min:
+                type: integer
+              max:
+                type: integer
+              regex:
+                type: string
+              name:
+                type: string
+        props:
+          type: object
+          description: Common properties of this resource.
+          properties:
+            annotations:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+            shares:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+            comments:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+        reorder:
+          description: reorder
+        searchQuery:
+          type: string
+        searchString:
+          type: string
+        searchURL:
+          type: string
+          description: |
+            URL template for collection queries (searches) in the collection.
+            By replacing the placeholders in the template with search parameters, a client can search in the collection. If this attribute is null, then the collection does not support searching.
+        smartFolderHeader:
+          type: string
+        taxonomies:
+          type: array
+          description: |
+            Contains top-level taxonomy nodes for all metadata fields which are enabled in the API for this collection and which have taxonomy enabled.
+          items:
+            $ref: '#/components/schemas/Taxonomy'
+        type:
+          type: string
+          description: Type of the collection
+        uploadHref:
+          type: string
+          description: URL to use in upload requests
+    CollectionList:
+      type: object
+      properties:
+        searchURL:
+          type: string
+          description: |
+            URL template for multi-collection searches in all collections in the collection list.
+            By replacing the placeholders in the template with search parameters, a client can search in all collections in the collection list
+        data:
+          type: array
+          description: List of elements in this part of the list. Each element is of the collection format.
+          items:
+            $ref: '#/components/schemas/Collection'
+        paging:
+          type: object
+          $ref: '#/components/schemas/Paging'
+
+    # Metadata
+    MetadataValue:
+      description: Represents a complete value of a metadata field
+      type: object
+      properties:
+        s:
+          description: String representation of the raw value of the metadata field. It is always present, except for bag fields.
+          type: string
+          nullable: true
+        n:
+          description: Numeric representation of the value. It is only present if the field is a number field.
+          type: integer
+          nullable: true
+        dt:
+          description: Date/time representation of the value. It is only present if the field is a date/time field.
+          type: string
+          nullable: true
+    MetadataView:
+      type: object
+      properties:
+        builtinFields:
+          type: object
+          description: Describes metadata fields with special semantic roles, such as the title or description of an asset.
+          properties:
+            notes:
+              type: object
+              properties:
+                taxonomy-only:
+                  type: boolean
+                isWritable:
+                  type: boolean
+                required:
+                  type: boolean
+                field:
+                  type: object
+                  properties:
+                    multi-instance:
+                      type: boolean
+                      description: true if field has zero or more values (bag field). false if field has exactly one value
+                    max-size:
+                      type: integer
+                      description: Maximum length of a field of type text.
+                    multiline:
+                      type: boolean
+                      description: For fields of type text, indicates that input masks should allow multi-line text input
+                    data-type:
+                      type: string
+                      description: Type of allowed values of the field. 
+                    validation:
+                      type: object
+                    id:
+                      type: integer
+                    label:
+                      type: string
+                      description: Localized human-readable display name of the metadata field
+            tags:
+              type: object
+              description: Description of the built-in tags field
+              properties:
+                field:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    taxonomyHref:
+                      type: string
+                      description: |
+                        If not null, URL of the taxonomy root associated with this field. If null, then taxonomy is not enabled for this field.
+                    label:
+                      type: string
+                    multi-instance:
+                      type: boolean
+                    max-size:
+                      type: integer
+                    multiline:
+                      type: boolean
+                    data-type:
+                      type: string
+                    validation:
+                      type: object
+                taxonomy-only:
+                  type: boolean
+                  description: |
+                    true if input masks should only allow users to select values from a taxonomy associated with the field. false if users should be allowed to enter arbitrary values that conform with the remaining specifications
+                isWritable:
+                  type: boolean
+                  description: true if the field may be edited in metadata update and upload requests. false if the field is read-only
+                required:
+                  type: boolean
+                  description: |
+                    true if the field must have a non-empty value (or at least one value if multi-instance is true). false if the field may be empty
+            status:
+              type: object
+              description: Description of the built-in status field
+              properties:
+                taxonomy-only:
+                  type: boolean
+                isWritable:
+                  type: boolean
+                required:
+                  type: boolean
+                field:
+                  type: object
+                  properties:
+                    multiline:
+                      type: boolean
+                    data-type:
+                      type: string
+                    validation:
+                      type: object
+                    id:
+                      type: integer
+                    label:
+                      type: string
+                    multi-instance:
+                      type: boolean
+                    max-size:
+                      type: integer
+            rating:
+              type: object
+              description: Description of the built-in rating field
+              properties:
+                taxonomy-only:
+                  type: boolean
+                isWritable:
+                  type: boolean
+                required:
+                  type: boolean
+                field:
+                  type: object
+                  properties:
+                    max-size:
+                      type: integer
+                    multiline:
+                      type: boolean
+                    data-type:
+                      type: string
+                    validation:
+                      type: object
+                    id:
+                      type: integer
+                    label:
+                      type: string
+                    multi-instance:
+                      type: boolean
+            description:
+              type: object
+              description: Description of the built-in description field
+              properties:
+                taxonomy-only:
+                  type: boolean
+                isWritable:
+                  type: boolean
+                required:
+                  type: boolean
+                field:
+                  type: object
+                  properties:
+                    data-type:
+                      type: string
+                    validation:
+                      type: object
+                    id:
+                      type: integer
+                    label:
+                      type: string
+                    multi-instance:
+                      type: boolean
+                    max-size:
+                      type: integer
+                    multiline:
+                      type: boolean
+            title:
+              type: object
+              description: Description of the built-in title field
+              properties:
+                taxonomy-only:
+                  type: boolean
+                isWritable:
+                  type: boolean
+                required:
+                  type: boolean
+                field:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    label:
+                      type: string
+                    multi-instance:
+                      type: boolean
+                    max-size:
+                      type: integer
+                    multiline:
+                      type: boolean
+                    data-type:
+                      type: string
+                    validation:
+                      type: object
+        name:
+          type: string
+          description: Human-readable display name
+        detailRegions:
+          type: array
+          description: Contains descriptions of all metadata fields
+          items:
+            type: object
+            properties:
+              fields:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    field:
+                      type: object
+                      properties:
+                        data-type:
+                          type: string
+                        validation:
+                          type: object
+                        id:
+                          type: integer
+                        taxonomyHref:
+                          type: string
+                        label:
+                          type: string
+                        multi-instance:
+                          type: boolean
+                        max-size:
+                          type: integer
+                        multiline:
+                          type: boolean
+                    taxonomy-only:
+                      type: boolean
+                    isWritable:
+                      type: boolean
+                    required:
+                      type: boolean
+              name:
+                type: string
+        thumbnailFields:
+          type: object
+          description: Describes metadata fields that are shown in thumbnails
+          properties:
+            secondLine:
+              type: object
+              description: 	Description of the metadata field that provides the second line of the long description of a thumbnail
+              properties:
+                field:
+                  type: object
+                  properties:
+                    multiline:
+                      type: boolean
+                    data-type:
+                      type: string
+                    validation:
+                      type: object
+                    id:
+                      type: integer
+                    label:
+                      type: string
+                    multi-instance:
+                      type: boolean
+                    max-size:
+                      type: integer
+                valueStore:
+                  type: string
+                taxonomy-only:
+                  type: boolean
+                isWritable:
+                  type: boolean
+                required:
+                  type: boolean
+            firstLine:
+              type: object
+              description: Description of the metadata field that provides the first line of the long description of a thumbnail
+              properties:
+                required:
+                  type: boolean
+                field:
+                  type: object
+                  properties:
+                    multiline:
+                      type: boolean
+                    data-type:
+                      type: string
+                    validation:
+                      type: object
+                    id:
+                      type: integer
+                    taxonomyHref:
+                      type: string
+                    label:
+                      type: string
+                    multi-instance:
+                      type: boolean
+                    max-size:
+                      type: integer
+                valueStore:
+                  type: string
+                taxonomy-only:
+                  type: boolean
+                isWritable:
+                  type: boolean
+            label:
+              type: object
+              description: Description of the metadata field that provides the short description of a thumbnail
+              properties:
+                valueStore:
+                  type: string
+                taxonomy-only:
+                  type: boolean
+                isWritable:
+                  type: boolean
+                required:
+                  type: boolean
+        preserveModificationTime:
+          type: boolean
+        href:
+          type: string
+          description: URL
+        id:
+          type: string
+          description: Unique ID
+
+    # Orders
+    AssetLinkList:
+      type: object
+      properties:
+        data:
+          type: array
+          description: An array of assets to add to the cart
+          items:
+            type: object
+            properties:
+              href:
+                type: string
+                description: the URL of the asset to add to the cart
+    CartUpdate:
+      type: object
+      description: |
+        Used to edit the content of the cart, e.g. add or remove ordered items, change renditions for ordered assets, add custom order data or add a customer's comment to the order.
+      properties:
+        orderItems:
+          type: array
+          description: Complete list of ordered items. This replaces the existing list.
+          items:
+            type: object
+            properties:
+              rendition:
+                type: string
+                description: Rendition URL of rendition to order. This also identifies the asset. The rendition URL can be obtained from an Asset representation.
+        userComment:
+          type: string
+          description: Comment by the customer on the order.
+    Order:
+      type: object
+      properties:
+        modified:
+          type: string
+        href:
+          type: string
+        userComment:
+          type: string
+        orderItems:
+          type: array
+          items:
+            type: object
+            properties:
+              expired:
+                type: boolean
+              adminComment:
+                type: string
+              asset:
+                type: string
+              rendition:
+                type: object
+                properties:
+                  href:
+                    type: string
+                  name:
+                    type: string
+        owner:
+          type: object
+          properties:
+            username:
+              type: string
+            address:
+              type: object
+              properties:
+                businessType:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                organization:
+                  type: string
+                initial:
+                  type: string
+                profession:
+                  type: string
+                phone:
+                  type: string
+                email:
+                  type: string
+                title:
+                  type: string
+                country:
+                  type: string
+                fax:
+                  type: string
+                zipCode:
+                  type: string
+                city:
+                  type: string
+                state:
+                  type: string
+                homepage:
+                  type: string
+        created:
+          type: string
+        adminComment:
+          type: string
+        state:
+          type: string
+    OrderList:
+      type: object
+      description: Orderlist
+      properties:
+        paging:
+          type: object
+          properties:
+            first:
+              type: string
+            last:
+              type: string
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              orderItems:
+                type: array
+                description: Ordered items. Contains the renditions ordered by the customer, but may also be modified by an administrator.
+                items:
+                  type: object
+                  properties:
+                    expires:
+                      type: string
+                      description: Time when item expires, null if it never expires.
+                    adminComment:
+                      type: string
+                      description: Comment on this item by the administrator.
+                    asset:
+                      type: string
+                      description: Asset whose rendition is ordered
+                    rendition:
+                      type: object
+                      description: Rendition that is ordered.
+                      properties:
+                        download:
+                          type: string
+                          description: |
+                            Download URL of the ordered rendition or null.
+                            If not null, then this rendition can be downloaded (usually in approved orders only). This is not a direct download URL. The URL does not accept any requests.
+                        href:
+                          type: string
+                          description: |
+                            Original URL of the ordered rendition.
+                            This is the same as the rendition attribute in a cart update or order update request. Can be used to match against renditions.href in an Asset representation.
+                        name:
+                          type: string
+                          description: Human-readable display name of the rendition.
+                    expired:
+                      type: boolean
+                      description: true if item has expired, false otherwise
+              adminComment:
+                type: string
+                description: Comment on this order by the administrator.
+              href:
+                type: string
+                description: URL of the order
+              userComment:
+                type: string
+                description: |
+                  Comment on this order by the customer. A customer may add a comment when submitting an order or modifying the shopping cart.
+              owner:
+                type: object
+                description: |
+                  User representation of the customer that placed the order. Contains information such as the user's email address and user name.
+                properties:
+                  username:
+                    type: string
+                  address:
+                    type: object
+                    properties:
+                      homepage:
+                        type: string
+                      businessType:
+                        type: string
+                      firstName:
+                        type: string
+                      country:
+                        type: string
+                      zipCode:
+                        type: string
+                      phone:
+                        type: string
+                      state:
+                        type: string
+                      lastName:
+                        type: string
+                      organization:
+                        type: string
+                      city:
+                        type: string
+                      initial:
+                        type: string
+                      profession:
+                        type: string
+                      streetAddress:
+                        type: array
+                        items: {}
+                        example:
+                          - Address line 1
+                      title:
+                        type: string
+                      fax:
+                        type: string
+                      email:
+                        type: string
+              created:
+                type: string
+                description: Time when order was created
+              orderReference:
+                type: string
+                description: |
+                  A human-readable string that uniquely identifies the order on the site.
+                  May be shown in notifications and used for communication with users.
+              modified:
+                type: string
+                description: Time when order was last modified
+              expires:
+                type: string
+                description: |
+                  Time when order expires, null if it never expires.
+                  An administrator or API client may set an expiry time when approving an order.
+              state:
+                type: string
+                description: Current state of the order. Changes when an order is submitted, approved or rejected.
+                example:
+                  - pending - The order is waiting for administrator approval.
+                  - approved - The order has been approved.
+                  - rejected - The order has been rejected.
+                  - expired - The order has expired.
+                  - created - The order has been created but not submitted yet.
+                  - cart - the order is a customer's personal shopping cart.
+    OrderSubmissionInfo:
+      type: object
+      description: Info on submitted Order
+      properties:
+        orderLocation:
+          type: string
+          description: URL of the order. Links to an Order representation.
+        orderReference:
+          type: string
+          description: |
+            A human-readable string that uniquely identifies the order on the site.
+            May be shown in notifications and used for communication with users. Same as the orderReference attribute in the Order representation.
+        checkoutPageLocation:
+          type: string
+          description: |
+            URL of the checkout page to show to the user.
+            This page SHOULD be shown to the customer in a browser window in order to proceed with the ordering process. Depending on the site settings, this may be the standard FotoWeb checkout page or a custom page (which may include payment options). A native application may provide its own native checkout user interface and ignore this parameter. This is equal to the checkoutPageLocation attribute of the Order representation.
+    OrderUpdate:
+      type: object
+      description: Updating an order
+      properties:
+        orderItems:
+          type: array
+          description: Complete list of ordered items. This replaces the existing list. (Set to [] to empty the order.)
+          items:
+            type: object
+            properties:
+              adminComment:
+                type: string
+                description: Comment by the administrator on the order item
+              rendition:
+                type: string
+                description: |
+                  Rendition URL of rendition to order. This also identifies the asset.
+                  The rendition URL can be obtained from an Asset representation.
+              expires:
+                type: string
+                description: |
+                  Time when order item expires, null if it never expires.
+                  After the expiration time, the customer cannot download this rendition any more.
+        expires:
+          type: string
+          description: |
+            Time when this order expires, null if if never expires.
+            After the expiration time, the customer cannot download any renditions from this order any more.
+        adminComment:
+          type: string
+          description: Comment by the administrator on the order.
+        orderData:
+          type: array
+          description: Custom order data for the order. Completely replaces existing custom order data.
+          items:
+            type: object
+            $ref: '#/components/schemas/Order'
+
+    # Taxonomies
+    Taxonomy:
+      description: A taxonomy (including properties and root items)
+      required:
+      - field
+      - href
+      - pluralName
+      type: object
+      properties:
+        name:
+          type: string
+          description: Display name
+          example: Bug
+        pluralName:
+          type: string
+          description: Plural Name
+          example: Bugs
+        description:
+          type: string
+          description: Description
+        hasChildren:
+          type: boolean
+          description: To know if the item has children
+          example: true
+        field:
+          type: integer
+          description: Numeric ID of metadata field
+          example: 25
+        href:
+          type: string
+          description: URL of this taxonomy item
+        taxonomyHref:
+          type: string
+          description: URL of the root of this taxonomy
+        items:
+          type: object
+          $ref: '#/components/schemas/TaxonomyItemList'
+    TaxonomyAncestors:
+      description: Taxonomy parent of a Taxonomy Item
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          type: string
+          description: Display name
+          example: Bug
+        href:
+          type: string
+          description: URL of this taxonomy item
+    TaxonomyCreationInfo:
+      description: Properties to create a taxonomy field
+      required:
+        - field
+        - pluralName
+      type: object
+      properties:
+        field:
+          type: integer
+          description: Numeric ID of metadata field
+          example: 25
+        name:
+          type: string
+          description: Taxonomy Name
+          example: A Taxonomy Name
+        pluralName:
+          type: string
+          description: Display name
+          example: A Plural Taxonomy Name
+        description:
+          type: string
+          description: Description
+    TaxonomyInfo:
+      description: Properties of a taxonomy field
+      required:
+      - field
+      - href
+      - pluralName
+      type: object
+      properties:
+        name:
+          type: string
+          description: Display name
+          example: Bug
+        pluralName:
+          type: string
+          description: Plural Name
+          example: Bugs
+        description:
+          type: string
+          description: Description
+        hasChildren:
+          type: boolean
+          description: To know if the item has children
+          example: true
+        field:
+          type: integer
+          description: Numeric ID of metadata field
+          example: 25
+        href:
+          type: string
+          description: URL of this taxonomy item
+        taxonomyHref:
+          type: string
+          description: URL of the root of this taxonomy
+    TaxonomyItem:
+      description: A taxonomy item (including child items and ancestors)
+      type: object
+      properties:
+        name:
+          type: string
+          description: Display name
+          example: Bug
+        description:
+          type: string
+          description: Description
+        hasChildren:
+          type: boolean
+          description: To know if the item has children
+          example: true
+        field:
+          type: integer
+          description: Numeric ID of metadata field
+          example: 25
+        href:
+          type: string
+          description: URL of this taxonomy item
+        taxonomyHref:
+          type: string
+          description: URL of the root of this taxonomy
+        acl:
+          type: array
+          items:
+            type: string
+          description: |
+            Capabilities / access list:
+              * `Set` - The value of this item can be assigned to a field
+              * `Query` - This item can be used in search queries
+              * `Navigate` - Users can browse children of this item
+              * `Hint` - (currently unused)
+          example: [ Set, Query, Navigate ]
+        value:
+          type: string
+          description: Metadata value (for search)
+        customSearch:
+          type: string
+          description: Custom search expression
+        children:
+          $ref: '#/components/schemas/TaxonomyItemList'
+        ancestors:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxonomyAncestors'
+    TaxonomyItemCreationInfo:
+      description: Properties to create a taxonomy item
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          type: string
+          description: Display name
+          example: A taxonomy name
+        description:
+          type: string
+          description: Description
+        acl:
+          type: array
+          items:
+            type: string
+          description: |
+            Capabilities / access list:
+              * `Set` - The value of this item can be assigned to a field
+              * `Query` - This item can be used in search queries
+              * `Navigate` - Users can browse children of this item
+              * `Hint` - (currently unused)
+          example: [ Set, Query, Navigate ]
+        value:
+          type: string
+          description: Metadata value (for search)
+        customSearch:
+          type: string
+          description: Custom search expression
+    TaxonomyItemInfo:
+      description: Properties of a taxonomy item
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          type: string
+          description: Display name
+          example: Bug
+        description:
+          type: string
+          description: Description
+        hasChildren:
+          type: boolean
+          description: To know if the item has children
+          example: true
+        field:
+          type: integer
+          description: Numeric ID of metadata field
+          example: 25
+        href:
+          type: string
+          description: URL of this taxonomy item
+        taxonomyHref:
+          type: string
+          description: URL of the root of this taxonomy
+        acl:
+          type: array
+          items:
+            type: string
+          description: |
+            Capabilities / access list:
+              * `Set` - The value of this item can be assigned to a field
+              * `Query` - This item can be used in search queries
+              * `Navigate` - Users can browse children of this item
+              * `Hint` - (currently unused)
+          example: [ Set, Query, Navigate ]
+        value:
+          type: string
+          description: Metadata value (for search)
+        customSearch:
+          type: string
+          description: Custom search expression
+    TaxonomyItemList:
+      description: Paged list of taxonomy items
+      required:
+      - data
+      - paging
+      type: object
+      properties:
+        paging:
+          $ref: '#/components/schemas/PagingInfo'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxonomyItemInfo'
+    TaxonomyItemUpdate:
+      description: Properties to update a taxonomy item
+      type: object
+      required:
+        - name
+        - description
+        - acl
+        - value
+      properties:
+        name:
+          type: string
+          description: Display name
+          example: Bug
+        description:
+          type: string
+          description: Description
+        acl:
+          type: array
+          items:
+            type: string
+          description: |
+            Capabilities / access list:
+              * `Set` - The value of this item can be assigned to a field
+              * `Query` - This item can be used in search queries
+              * `Navigate` - Users can browse children of this item
+              * `Hint` - (currently unused)
+          example: [ Set, Query, Navigate ]
+        value:
+          type: string
+          description: Metadata value (for search)
+        customSearch:
+          type: string
+          description: Custom search expression
+    TaxonomyList:
+      description: Paged list of taxonomy fields
+      required:
+      - data
+      - paging
+      type: object
+      properties:
+        paging:
+          $ref: '#/components/schemas/PagingInfo'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxonomyInfo'
+    TaxonomySearchItem:
+      description: Paged list of taxonomy items with Ancestorrs
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          type: string
+          description: Display name
+          example: Bug
+        description:
+          type: string
+          description: Description
+        hasChildren:
+          type: boolean
+          description: To know if the item has children
+          example: true
+        field:
+          type: integer
+          description: Numeric ID of metadata field
+          example: 25
+        href:
+          type: string
+          description: URL of this taxonomy item
+        taxonomyHref:
+          type: string
+          description: URL of the root of this taxonomy
+        acl:
+          type: array
+          items:
+            type: string
+          description: |
+            Capabilities / access list:
+              * `Set` - The value of this item can be assigned to a field
+              * `Query` - This item can be used in search queries
+              * `Navigate` - Users can browse children of this item
+              * `Hint` - (currently unused)
+          example: [ Set, Query, Navigate ]
+        value:
+          type: string
+          description: Metadata value (for search)
+        customSearch:
+          type: string
+          description: Custom search expression
+        ancestors:
+          type: array
+          description: Taxonomy parents of the taxonomy item
+          items:
+            $ref: '#/components/schemas/TaxonomyAncestors'
+    TaxonomySearchItemList:
+      description: Paged list of taxonomy items
+      required:
+      - data
+      - paging
+      type: object
+      properties:
+        paging:
+          $ref: '#/components/schemas/PagingInfo'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxonomySearchItem'
+    TaxonomyUpdate:
+      description: Properties to update a taxonomy field
+      required:
+      - pluralName
+      type: object
+      properties:
+        name:
+          type: string
+          description: Taxonomy Name
+          example: A Taxonomy Name
+        pluralName:
+          type: string
+          description: Display name
+          example: A Plural Taxonomy Name
+        description:
+          type: string
+          description: Description
+
+    # Upload
+    BatchUploadCreate:
+      type: object
+      description: API model to create a new batch upload task used to upload a file
+      required:
+        - destination
+        - fileSize
+      properties:
+        destination:
+          type: string
+          description: |
+            * URL of the collection (e.g. archive or folder) to upload to OR
+            * URL of the asset to upload a new revision
+        folder:
+          type: string
+          description: |
+            A folder path relative to the destination (when it is a collection URL). 
+            The folder may or may not exist, and it is created if it does not exist.
+        filename:
+          type: string
+          description: |
+            Filename of the file being uploaded. It must be given when uploading to a folder.
+        hasXmp:
+          type: boolean
+          description: |
+            * true: An XMP sidecar file with metadata is uploaded along with the master file
+            * false: No XMP sidecar file is uploaded
+        fileSize:
+          type: integer
+          description: |
+            The exact size of the file (in bytes)
+        checkoutId:
+          type: string
+          description: |
+            This parameter must be set to null. It is used by internal FotoWare plug-ins to upload a new version of a checked-out file.
+        metadata:
+          $ref: '#/components/schemas/BatchUploadMetadata'
+        comment:
+          type: string
+          description: |
+            Comment to add to the revision. Set comment to null when not required. When uploading a new revision of a file that already exists, this becomes the comment of the new revision. 
+    BatchUploadMetadata:
+      type: object
+      description: API model to describe the metadata applied to an asset on upload.
+      properties:
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/BatchUploadMetadataFields'
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/BatchUploadMetadataAttributes'
+    BatchUploadMetadataFields:
+      type: object
+      description: API model to describe the metadata fields updated in the upload
+      properties:
+        id:
+          type: integer
+          description: Numeric ID of the destination metadata field
+        action:
+          type: string
+          enum:
+            - 'add'
+            - 'append'
+            - 'prepend'
+            - 'erase'
+          default: 'add'
+          description: Metadata action to perform
+        value:
+          type: object
+          description: |
+            Metadata value(s) to set or add.
+            This parameter is optional or required, depending on the action.
+            Depending on the action and field type, this can be a single value (given as a string) or zero or multiple values (given as an array of strings).
+    BatchUploadMetadataAttributes:
+      type: object
+      description: API model to describe the attributes used to set file attributes in the upload
+      properties:
+        key: 
+          type: string
+          description: Specifies which attribute to set.
+        value:
+          type: string
+          description: Specifies the value of the attribute.
+    BatchUploadInfo:
+      type: object
+      description: API model for the response from creating a batch upload task.
+      properties:
+        id: 
+          type: string
+          description: |
+            Random 128-bit GUID encoded as BASE64URL.
+        chunkSize:
+          type: integer
+          description: |
+            The upload chunk size in bytes.
+        numChunks:
+          type: integer
+          description: |
+            Total number of chunks to upload.
+        hasXmp:
+          type: boolean
+          description: |
+            Specifies if an XMP sidecar file with metadata is to be uploaded along with the master file.
+    BatchUploadStatus:
+      type: object
+      description: API model to describe the batch upload status.
+      properties:
+        status:
+          type: string
+          description: |
+            * awaitingData - Some chunks or the XMP file have not been received yet
+            * pending - The upload is finalized and has been queued for processing
+            * inProgress - The upload is finalized and is being processed
+            * done - The upload has completed successfully, and result contains more information
+            * failed - The upload has failed, and error contains more information 
+        result:
+          $ref: '#/components/schemas/BatchUploadStatusResult'
+          description: The result of the upload task
+        error:
+          $ref: '#/components/schemas/BatchUploadStatusError'
+          description: Any errors reported by the upload task
+    BatchUploadStatusError:
+      type: object
+      description: Information about the failed upload
+      properties:
+        value:
+          type: string
+          description: Symbolic name of the type of error that has occurred when uploading this asset
+        message:
+          type: string
+          description: Human-readable description of error that has occurred
+    BatchUploadStatusResult:
+      type: object
+      description: Information about the successful upload
+      properties:
+        assetUrl:
+          type: string
+          description: The API URL of the uploaded asset
+        assetDetails:
+          type: string
+          description: The asset representation of the asset
+    UploadResponse:
+      type: object
+      properties:
+        href:
+          type: string
+    UploadStatus:
+      type: object
+      properties:
+        job:
+          type: object
+          description: Job info
+          properties:
+            status:
+              type: string
+              description: |
+               * pending - The task is queued for processing
+               * inProgress - Processing is still in progress
+               * done - Processing has finished, and a result is available
+               * failed - Processing has failed, and a result is available
+            result:
+              type: array
+              items:
+                type: string
+              description: |
+                Result of the background task. List of uploaded files, their status, and their location in FotoWeb.
+        task:
+          type: object
+          description: Task info
+          properties:
+            created:
+              type: string
+              description: Time when task was created. Date/time (ISO 8601 string)
+            modified:
+              type: string
+              description: Time when task was modified. Date/time (ISO 8601 string)
+            type:
+              type: string
+              description: For upload status this will always be upload
+
+    # User Management
+    PeopleList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              display_name:
+                type: string
+              unique_name:
+                type: string
+              href:
+                type: string
+        paging:
+          type: object
+          properties:
+            first:
+              type: string
+    Permission:
+      type: string
+      enum:
+        - View
+        - Preview
+        - Download
+        - EditText
+        - CropRotate
+        - Delete
+        - Comping
+        - TrdParty1
+        - TrdParty2
+        - TrdParty3
+        - TrdParty4
+        - Alert
+        - CopyTo
+        - MoveTo
+        - CopyFrom
+        - MoveFrom
+        - Rename
+        - OpenFile
+        - EditFile
+        - CropFile
+        - UploadFile
+        - FwdtPlace
+        - Export
+        - Comment
+        - Remove
+        - Reorder
+        - SetPosterAsset
+        - Add
+      description: >
+        * View - User has permission to access the information about and the contents of a collection. The API only exposes collections to which the request user has access, so this permission is always present
+        * Preview - Quick renditions are available in asset data.
+        * Download - Renditions are available in asset data.
+        * EditText - User has permission to update metadata on assets.
+        * CropRotate - User has permission to crop and rotate assets directly in FotoWeb.
+        * Delete - User has permission to delete assets.
+        * Comping - User has permission to request zoomed previews of assets.
+        * TrdParty1 - Custom permission. Can be used to define custom behavior for assets in third-party applications using the API and the access list.
+        * TrdParty2 - Custom permission. Can be used to define custom behavior for assets in third-party applications using the API and the access list.
+        * TrdParty3 - Custom permission. Can be used to define custom behavior for assets in third-party applications using the API and the access list.
+        * TrdParty4 - Custom permission. Can be used to define custom behavior for assets in third-party applications using the API and the access list.
+        * Alert - User has permission to create alerts in a collection.
+        * CopyTo - User has permission to copy assets to a collection. 
+        * MoveTo - 	User has permission to move assets to a collection.
+        * CopyFrom - User has permission to copy assets to other collections.
+        * MoveFrom - User has permissions to move assets to other collections.
+        * Rename - User has permission to rename assets.
+        * OpenFile - User has permission to open assets in FotoWeb Desktop.
+        * EditFile - User has permission to edit assets in FotoWeb Desktop.
+        * CropFile - User has permission to crop assets in FotoWeb Desktop.
+        * UploadFile - User has permission to upload new assets to a collection.
+        * FwdtPlace - User has permission to place assets in documents using FotoWeb Desktop extensions.
+        * Export - User has permission to export assets to external systems.
+        * Comment - User has permission to comment on assets, collections or other resources.
+        * Remove - User has permission to remove assets from a link collection.
+        * Reorder - User has permission to change the order of assets in a link collection.
+        * SetPosterAsset - User has permission to change the poster asset of a collection.
+        * Add - User has permission to add assets to a link collection.
+
+    # Workflows
+    QuickRenditions:
+      type: array
+      description: This is a list of available quick renditions
+      items:
+        type: object
+        properties:
+          href:
+            type: string
+            description: URL of the rendition image
+          square:
+            type: boolean
+            description: true if the image has equal width and height, false otherwise.
+          name:
+            type: string
+            description: Name of the quick rendition, as set in the configuration
+          size:
+            type: integer
+            description: Size of the image. This is the maximum of its width and its height in pixels.
+          width:
+            type: integer
+            description: Width of the image in pixels
+          height:
+            type: integer
+            description: Height of the image in pixels
+    RenditionRequest:
+      description: Rendition request
+      type: object
+      properties: 
+        href:
+          type: string
+          description: Rendition url
+    RenditionResponse:
+      description: Rendition response
+      type: object
+      properties: 
+        href:
+          type: string
+          description: download url
+
+    # General
+    Count:
+      type: object
+      description: Count of x
+      properties:
+        count:
+          type: integer
+    doctype:
+      type: string
+      enum:
+        - Image
+        - Movie
+        - Audio
+        - Document
+        - Graphic
+        - Generic
+    ErrorMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Message describing the error
+        href:
+          type: string
+          description: url
+    Paging:
+      type: object
+      description: Paging information. If null, then the list is not paged, i.e., the representation contains the entire list.
+      properties:
+        prev:
+          type: string
+          description: URL of previous page. If null, then there is no previous page, and the current representation is the first page.
+        next:
+          type: string
+          description: URL of next page. If null, then there is no next page, and the current representation is the last page.
+        first:
+          type: string
+          description: |
+            URL of first page. This attribute is never null and can be used for restarting navigation at the beginning of the list.
+        last:
+          type: string
+          description: |
+            URL of last page. If null, then the last page is not known, because it is not known how many pages there are.
+            The last page (if the list has finite length) can be �discovered� by following paging.next repeatedly
+    PagingInfo:
+      required:
+      - first
+      - last
+      - next
+      - prev
+      properties:
+        next:
+          type: string
+          description: URL of next page (null if next page)
+          nullable: true
+        prev:
+          type: string
+          description: URL of previous page (null if first page)
+          nullable: true
+        first:
+          type: string
+          description: URL of first page
+        last:
+          type: string
+          description: URL of last page
+      description: Paging information in a paged list
+
+  securitySchemes:
+    FotoWareOAuth:    # <---- arbitrary name
+      type: oauth2
+      description: This API uses OAuth 2 with the clientCredentials grant flow. [More info](https://api.example.com/docs/auth)
+      flows:
+        implicit:   # <---- OAuth flow(authorizationCode, implicit, password or clientCredentials)
+          authorizationUrl: /fotoweb/oauth2/authorize
+          scopes:
+            full_access: Full access to the API
+    FotoWareAccessToken:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    # optional, arbitrary value for documentation purposes
