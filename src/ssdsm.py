@@ -1,12 +1,31 @@
+# Digitala Stadsmuseet Python API
+#
+# This is a Python API for the Digitala Stadsmuseet (Stockholm's Digital City Museum)
+# It is based on the FotoWare API, which is documented at https://api.fotoware.com/docs/
+#
+# The API is written in Python 3.10
+# It uses the following libraries:
+# - requests
+# - json
+# - os
+# - glob
+#
+# The following functions are available:
+# - get_collections() - returns a list of all collections in the museum
+# - get_archive_by_id(id) - returns an archive object with all the assets in the archive
+# - get_asset_by_id(id) - returns an asset object with all the metadata for the asset
+# - get_assets_by_keyword(keyword) - returns a list of asset objects with all the metadata for the asset
+# - get_assets_by_city(city) - returns a list of asset objects with all the metadata for the asset
+# - get_assets_by_location(location) - returns a list of asset objects with all the metadata for the asset
+# - get_assets_by_country(country) - returns a list of asset objects with all the metadata for the asset
+# - get_asset_by_uid(uid) - returns an asset object with all the metadata for the asset
+#
+# Copyright: Devbrones 2023 under GNU General Public License v3.0
+
 import requests
 import json
 import os
-import re
 import glob
-
-
-    
-
 
 class ssdsm:
     class asset:
@@ -167,78 +186,56 @@ class ssdsm:
                 )
                 # add the asset to the archive
                 self.archive.assets.append(asset)
-
-
-
-ssdsm = ssdsm()
-ssdsm.get_collections()
-for collection in ssdsm.collections:
-    print(collection["id"])
-asset_index=0
-print("\n\n")
-"""
-for i in range(0, 50):
-    test_collection = ssdsm.get_archive_by_id(ssdsm.collections[asset_index]["id"], i)
-"""
-test_collection = ssdsm.get_archive_by_id(ssdsm.collections[asset_index]["id"])
-# print all assets in the collection
-print("Number of cached assets in collection (may not reflect cached images): " + str(len(ssdsm.archive.assets)))
-
-for asset in ssdsm.archive.assets:
-    print(": unit :  " + str(asset.name))
-    print(": unit :  " + str(asset.ftype))
-    print(": unit :  " + str(asset.px_res))
-    print(": unit :  " + str(asset.cm_res))
-    print(": unit :  " + str(asset.cspace))
-    print(": unit :  " + str(asset.href))
-    print(": unit :  " + str(asset.upphov))
-    print(": unit :  " + str(asset.ty_start))
-    print(": unit :  " + str(asset.ty_end))
-    print(": unit :  " + str(asset.cclicense))
-    print(": unit :  " + str(asset.keywords))
-    print(": unit :  " + str(asset.person))
-    print(": unit :  " + str(asset.stad))
-    print(": unit :  " + str(asset.ort))
-    print(": unit :  " + str(asset.land))
-    print(": unit :  " + str(asset.projektnamn))
-    print(": unit :  " + str(asset.uid))
-    print(": unit :  " + str(asset.fulltext).replace("\n"," "))
-    print(": unit :  " + str(asset.shorttext).replace("\n"," "))
-    print("\n\n")
-
-
-# cache all images in the collection
-for asset in ssdsm.archive.assets:
-    print("caching " + asset.name)
-    # download the image from the href
-    image = requests.get(ssdsm.rootpoint + asset.href, headers=ssdsm.headers)
-    # save the image to the _imgcache folder
-    if ssdsm.cache_resolution == 0:
-        resnm = '200/'
-    elif ssdsm.cache_resolution == 1:
-        resnm = '800/'
-    elif ssdsm.cache_resolution == 2:
-        resnm = '2048/'
-    with open("_imgcache/" + resnm + asset.name, "wb") as f:
-        f.write(image.content)
-    # write the metadata to a txt file
-    with open("_imgcache/" + resnm + asset.name + ".txt", "w") as f:
-        f.write("uid: " + str(asset.uid) + "\n")
-        f.write("photographer: " + str(asset.upphov) + "\n")
-        f.write("year: " + str(asset.ty_start) + "\n")
-        f.write("cc license: " + str(asset.cclicense) + "\n")
-        f.write("keywords: " + str(asset.keywords) + "\n")
-        f.write("city: " + str(asset.stad) + "\n")
-        f.write("place: " + str(asset.ort) + "\n")
-        f.write("country: " + str(asset.land) + "\n")
-        f.write("project name: " + str(asset.projektnamn) + "\n")
-        f.write("full text: " + str(asset.fulltext) + "\n")
-        f.write("short text: " + str(asset.shorttext) + "\n")
+        return self.archive
+    def get_asset_by_id(self, id):
+        # get the metadata for the asset from the json
+        metadata = {
+            "attributes": {
+                "name": asset["filename"],
+                "fileType": asset["doctype"],
+                "pixelWidth": asset["attributes"]["imageattributes"]["pixelwidth"],
+                "pixelHeight": asset["attributes"]["imageattributes"]["pixelheight"],
+                "cmWidth": "NA",
+                "cmHeight": "NA",
+                "colorSpace": asset["attributes"]["imageattributes"]["colorspace"],
+                "href": asset["quickRenditions"][self.cache_resolution]["href"],
+                "photographer": asset["metadata"]["80"]["value"],
+                "yearStart": asset["metadata"]["539"]["value"],
+                "yearEnd": asset["metadata"]["533"]["value"],
+                "ccLicense": asset["metadata"]["590"]["value"],
+                "keywords": "", #asset["metadata"]["25"]["value"],
+                "person": "NA",
+                "city": "",
+                "place": "",
+                "country": "",
+                "projectName": "NA",
+                "uid": asset["metadata"]["187"]["value"],
+                "fullText": asset["metadata"]["120"]["value"],
+                "shortText": asset["metadata"]["5"]["value"]
+            }
+        }
+        # create the asset object
+        asset = self.asset(
+            metadata["attributes"]["name"],
+            metadata["attributes"]["fileType"],
+            (metadata["attributes"]["pixelWidth"], metadata["attributes"]["pixelHeight"]),
+            (metadata["attributes"]["cmWidth"], metadata["attributes"]["cmHeight"]),
+            metadata["attributes"]["colorSpace"],
+            metadata["attributes"]["href"],
+            metadata["attributes"]["photographer"],
+            metadata["attributes"]["yearStart"],
+            metadata["attributes"]["yearEnd"],
+            metadata["attributes"]["ccLicense"],
+            metadata["attributes"]["keywords"],
+            metadata["attributes"]["person"],
+            metadata["attributes"]["city"],
+            metadata["attributes"]["place"],
+            metadata["attributes"]["country"],
+            metadata["attributes"]["projectName"],
+            metadata["attributes"]["uid"],
+            metadata["attributes"]["fullText"],
+            metadata["attributes"]["shortText"]
+        )
+        return asset
+        
     
-    
-
-
-##
-
-
-## assets N metadata 120 = best prompt
