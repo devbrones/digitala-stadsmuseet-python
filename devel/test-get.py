@@ -86,22 +86,24 @@ class ssdsm:
         # which means we have reached the end of the archive
         # set the page count to the last page we have cached by getting the highest number in the _ign folder
         # if the folder is empty, set it to 0
+        page:int = 0
         if os.path.exists("_ign"):
+            print('folder exists')
             if len(os.listdir("_ign")) > 0:
                 page = max([int(x.split(".")[0]) for x in [x.split("_")[-1] for x in glob.glob("_ign/*.json")]])
             else:
                 page = 0
-        #while True or page <= 50:
-        #    page += 1
-        #    archive = requests.get(self.entrypoint + id + "/;p="+ str(page), headers=self.headers).json()
-        #    try:
-        #        if archive["value"] == "FolderNotFound":
-        #            break
-        #    except:
-        #        pass
-        #    # we have a valid page, so we can cache it to a file in _ign
-        #    with open("_ign/" + id + "_" + str(page) + ".json", "w") as f:
-        #        json.dump(archive, f, indent=4)
+        while page <= 49:
+            page += 1
+            archive = requests.get(self.entrypoint + id + "/;p="+ str(page), headers=self.headers).json()
+            try:
+                if archive["value"] == "FolderNotFound":
+                    break
+            except:
+                pass
+            # we have a valid page, so we can cache it to a file in _ign
+            with open("_ign/" + id + "_" + str(page) + ".json", "w") as f:
+                json.dump(archive, f, indent=4)
         
         # now we have all the pages cached, so we can iterate through them and create the asset objects
         # we also need to get the metadata for each asset, so we can create the asset objects
@@ -132,7 +134,7 @@ class ssdsm:
                         "yearStart": asset["metadata"]["539"]["value"],
                         "yearEnd": asset["metadata"]["533"]["value"],
                         "ccLicense": asset["metadata"]["590"]["value"],
-                        "keywords": "", #asset["metadata"]["25"]["value"],
+                        "keywords": asset["builtinFields"][2]["value"],
                         "person": "NA",
                         "city": "",
                         "place": "",
@@ -167,78 +169,64 @@ class ssdsm:
                 )
                 # add the asset to the archive
                 self.archive.assets.append(asset)
+    def cacheImages(self):
+        for asset in ssdsm.archive.assets:
+            # download the image from the href
+            image = requests.get(ssdsm.rootpoint + asset.href, headers=ssdsm.headers)
+            # save the image to the _imgcache folder
+            if ssdsm.cache_resolution == 0:
+                resnm = '200/'
+            elif ssdsm.cache_resolution == 1:
+                resnm = '800/'
+            elif ssdsm.cache_resolution == 2:
+                resnm = '2048/'
+            if not os.path.exists("_imgcache/" + resnm):
+                os.makedirs("_imgcache/" + resnm)
+            with open("_imgcache/" + resnm + asset.name, "wb") as f:
+                f.write(image.content)
+            # write the metadata to a txt file
+            with open("_imgcache/" + resnm + asset.name + ".txt", "w") as f:
+                f.write("uid: " + str(asset.uid) + "\n")
+                f.write("photographer: " + str(asset.upphov) + "\n")
+                f.write("year: " + str(asset.ty_start) + "\n")
+                f.write("cc license: " + str(asset.cclicense) + "\n")
+                f.write("keywords: " + str(asset.keywords) + "\n")
+                f.write("city: " + str(asset.stad) + "\n")
+                f.write("place: " + str(asset.ort) + "\n")
+                f.write("country: " + str(asset.land) + "\n")
+                f.write("project name: " + str(asset.projektnamn) + "\n")
+                f.write("full text: " + str(asset.fulltext) + "\n")
+                f.write("short text: " + str(asset.shorttext) + "\n")
 
 
 
 ssdsm = ssdsm()
 ssdsm.get_collections()
-for collection in ssdsm.collections:
-    print(collection["id"])
+#for collection in ssdsm.collections:
+#    print(collection["id"])
 asset_index=0
-print("\n\n")
-"""
-for i in range(0, 50):
-    test_collection = ssdsm.get_archive_by_id(ssdsm.collections[asset_index]["id"], i)
-"""
 test_collection = ssdsm.get_archive_by_id(ssdsm.collections[asset_index]["id"])
 # print all assets in the collection
-print("Number of cached assets in collection (may not reflect cached images): " + str(len(ssdsm.archive.assets)))
+print("Number of cached assets in collection (does not reflect cached images): " + str(len(ssdsm.archive.assets)))
 
-for asset in ssdsm.archive.assets:
-    print(": unit :  " + str(asset.name))
-    print(": unit :  " + str(asset.ftype))
-    print(": unit :  " + str(asset.px_res))
-    print(": unit :  " + str(asset.cm_res))
-    print(": unit :  " + str(asset.cspace))
-    print(": unit :  " + str(asset.href))
-    print(": unit :  " + str(asset.upphov))
-    print(": unit :  " + str(asset.ty_start))
-    print(": unit :  " + str(asset.ty_end))
-    print(": unit :  " + str(asset.cclicense))
-    print(": unit :  " + str(asset.keywords))
-    print(": unit :  " + str(asset.person))
-    print(": unit :  " + str(asset.stad))
-    print(": unit :  " + str(asset.ort))
-    print(": unit :  " + str(asset.land))
-    print(": unit :  " + str(asset.projektnamn))
-    print(": unit :  " + str(asset.uid))
-    print(": unit :  " + str(asset.fulltext).replace("\n"," "))
-    print(": unit :  " + str(asset.shorttext).replace("\n"," "))
-    print("\n\n")
-
-
-# cache all images in the collection
-for asset in ssdsm.archive.assets:
-    print("caching " + asset.name)
-    # download the image from the href
-    image = requests.get(ssdsm.rootpoint + asset.href, headers=ssdsm.headers)
-    # save the image to the _imgcache folder
-    if ssdsm.cache_resolution == 0:
-        resnm = '200/'
-    elif ssdsm.cache_resolution == 1:
-        resnm = '800/'
-    elif ssdsm.cache_resolution == 2:
-        resnm = '2048/'
-    with open("_imgcache/" + resnm + asset.name, "wb") as f:
-        f.write(image.content)
-    # write the metadata to a txt file
-    with open("_imgcache/" + resnm + asset.name + ".txt", "w") as f:
-        f.write("uid: " + str(asset.uid) + "\n")
-        f.write("photographer: " + str(asset.upphov) + "\n")
-        f.write("year: " + str(asset.ty_start) + "\n")
-        f.write("cc license: " + str(asset.cclicense) + "\n")
-        f.write("keywords: " + str(asset.keywords) + "\n")
-        f.write("city: " + str(asset.stad) + "\n")
-        f.write("place: " + str(asset.ort) + "\n")
-        f.write("country: " + str(asset.land) + "\n")
-        f.write("project name: " + str(asset.projektnamn) + "\n")
-        f.write("full text: " + str(asset.fulltext) + "\n")
-        f.write("short text: " + str(asset.shorttext) + "\n")
-    
-    
-
-
-##
-
-
-## assets N metadata 120 = best prompt
+#for asset in ssdsm.archive.assets:
+#    print(": unit :  " + str(asset.name))
+#    print(": unit :  " + str(asset.ftype))
+#    print(": unit :  " + str(asset.px_res))
+#    print(": unit :  " + str(asset.cm_res))
+#    print(": unit :  " + str(asset.cspace))
+#    print(": unit :  " + str(asset.href))
+#    print(": unit :  " + str(asset.upphov))
+#    print(": unit :  " + str(asset.ty_start))
+#    print(": unit :  " + str(asset.ty_end))
+#    print(": unit :  " + str(asset.cclicense))
+#    print(": unit :  " + str(asset.keywords))
+#    print(": unit :  " + str(asset.person))
+#    print(": unit :  " + str(asset.stad))
+#    print(": unit :  " + str(asset.ort))
+#    print(": unit :  " + str(asset.land))
+#    print(": unit :  " + str(asset.projektnamn))
+#    print(": unit :  " + str(asset.uid))
+#    print(": unit :  " + str(asset.fulltext).replace("\n"," "))
+#    print(": unit :  " + str(asset.shorttext).replace("\n"," "))
+#    print("\n\n")
